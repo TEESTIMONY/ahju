@@ -1,0 +1,140 @@
+@import 'tailwindcss';
+
+:root {
+  --site-bg: #f7f7f5;
+  --text-main: #111111;
+  --text-muted: #4b5563;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: 'Inter', 'Poppins', sans-serif;
+  background: var(--site-bg);
+  color: var(--text-main);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+.bg-site {
+  background: var(--site-bg);
+}
+
+@keyframes hero-scroll-up {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+@keyframes hero-scroll-down {
+  0% {
+    transform: translateY(-50%);
+  }
+  100% {
+    transform: translateY(0);
+  }
+}
+
+.hero-scroll-up {
+  animation: hero-scroll-up 24s linear infinite;
+}
+
+.hero-scroll-down {
+  animation: hero-scroll-down 24s linear infinite;
+}
+
+@keyframes chip-float {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-3px);
+  }
+}
+
+@keyframes soft-glow {
+  0%,
+  100% {
+    box-shadow: 0 10px 30px rgba(17, 17, 17, 0.08);
+  }
+  50% {
+    box-shadow: 0 14px 40px rgba(17, 17, 17, 0.13);
+  }
+}
+
+.chip-float {
+  animation: chip-float 3s ease-in-out infinite;
+}
+
+.soft-glow {
+  animation: soft-glow 5s ease-in-out infinite;
+}
+
+@keyframes highlights-auto-scroll {
+  0% {
+    transform: translateY(0);
+  }
+  100% {
+    transform: translateY(-50%);
+  }
+}
+
+.highlights-auto-track {
+  animation: highlights-auto-scroll 32s steps(8, end) infinite;
+}
+
+.fancy-section {
+  box-shadow: 0 14px 40px rgba(17, 17, 17, 0.08);
+}
+
+.fancy-card {
+  box-shadow: 0 8px 22px rgba(17, 17, 17, 0.08);
+}
+
+.faq-summary {
+  position: relative;
+}
+
+.faq-summary::after {
+  content: '▾';
+  position: absolute;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  font-weight: 600;
+  color: rgba(17, 17, 17, 0.65);
+  font-size: 0.9rem;
+  transition: transform 0.2s ease;
+}
+
+.faq-item[open] .faq-summary::after {
+  transform: translateY(-50%) rotate(180deg);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-scroll-up,
+  .hero-scroll-down,
+  .chip-float,
+  .soft-glow,
+  .highlights-auto-track {
+    animation: none;
+  }
+}
+
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
