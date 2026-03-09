@@ -16,7 +16,7 @@ export const ThemeProvider = ({ children }) => {
     const savedTheme = localStorage.getItem('linkhub-theme')
     return savedTheme ? JSON.parse(savedTheme) : {
       background: 'gradient', // solid, gradient, or image
-      accentColor: '#00FF99',
+      accentColor: '#54b435',
       fontStyle: 'Poppins',
       buttonStyle: 'filled',
       isDark: true
@@ -28,8 +28,8 @@ export const ThemeProvider = ({ children }) => {
   }, [theme])
 
   useEffect(() => {
-    const darkGradient = 'linear-gradient(135deg, #0a0a0a 0%, #121212 100%)'
-    document.body.style.background = darkGradient
+    const brandGradient = 'linear-gradient(135deg, #f6f8f3 0%, #eef5e8 100%)'
+    document.body.style.background = brandGradient
   }, [])
 
   const updateTheme = (newTheme) => {

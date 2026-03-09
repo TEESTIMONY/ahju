@@ -7,11 +7,16 @@ export default {
   theme: {
     extend: {
       colors: {
-        primary: '#00FF99',
-        secondary: '#00C4FF',
+        primary: '#54b435',
+        secondary: '#2f3b40',
+        brand: {
+          green: '#54b435',
+          slate: '#2f3b40',
+          charcoal: '#222222',
+        },
         dark: {
-          900: '#0a0a0a',
-          800: '#121212',
+          900: '#222222',
+          800: '#2f3b40',
         },
         light: {
           bg: '#f5f5f5',
@@ -27,8 +32,8 @@ export default {
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
       boxShadow: {
-        'neon': '0 0 10px rgba(0, 255, 153, 0.5)',
-        'neon-lg': '0 0 20px rgba(0, 255, 153, 0.8)',
+        'neon': '0 0 10px rgba(84, 180, 53, 0.45)',
+        'neon-lg': '0 0 20px rgba(84, 180, 53, 0.7)',
       },
     },
   },

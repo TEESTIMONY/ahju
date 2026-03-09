@@ -1,9 +1,22 @@
 @import 'tailwindcss';
 
+@theme {
+  --color-primary: #54b435;
+  --color-secondary: #2f3b40;
+  --color-brand-green: #54b435;
+  --color-brand-slate: #2f3b40;
+  --color-brand-charcoal: #222222;
+  --color-dark-900: #222222;
+  --color-dark-800: #2f3b40;
+}
+
 :root {
-  --site-bg: #f7f7f5;
-  --text-main: #111111;
-  --text-muted: #4b5563;
+  --site-bg: #f6f8f3;
+  --text-main: #222222;
+  --text-muted: #2f3b40;
+  --brand-green: #54b435;
+  --brand-slate: #2f3b40;
+  --brand-charcoal: #222222;
 }
 
 * {

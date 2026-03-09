@@ -219,24 +219,24 @@ const HeroSection = () => {
       <section className="mx-auto w-full max-w-[86rem] px-2 pb-14 pt-16 sm:px-3 lg:px-4">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="max-w-2xl text-center lg:text-left">
-            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-black/10 bg-white px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-black/70">
+            <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-green/30 bg-brand-green/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand-slate">
               <Sparkles className="h-3.5 w-3.5" /> AHJU Identity
             </p>
-            <h1 className="text-4xl font-semibold tracking-tight text-black sm:text-5xl lg:text-6xl">
+            <h1 className="text-4xl font-semibold tracking-tight text-brand-charcoal sm:text-5xl lg:text-6xl">
               Your Executive Identity Card That Closes Deals.
             </h1>
-            <p className="mt-5 max-w-2xl text-base leading-relaxed text-black/65 sm:text-lg">
+            <p className="mt-5 max-w-2xl text-base leading-relaxed text-brand-slate/80 sm:text-lg">
               In Nigeria, first impressions open doors. AHJU helps you connect with confidence, clarity, and prestige.
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <Link
                 to="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-black px-6 py-3 text-sm font-medium text-white transition hover:bg-black/85"
+                className="inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-green/90"
               >
                 Get Your AHJU Card <ArrowRight className="h-4 w-4" />
               </Link>
-              <button className="rounded-full border border-black/15 bg-white px-6 py-3 text-sm font-medium text-black/80 transition hover:bg-black/5">
+              <button className="rounded-full border border-brand-slate/20 bg-white px-6 py-3 text-sm font-medium text-brand-slate transition hover:bg-brand-green/10">
                 View Prestige Collection
               </button>
             </div>
@@ -307,13 +307,13 @@ const HeroSection = () => {
       </section>
 
       <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
-        <div className="relative overflow-hidden rounded-[2rem] border-2 border-black bg-[#f6f4ee] p-6 sm:p-8">
-          <div className="pointer-events-none absolute right-0 top-0 h-14 w-28 rounded-bl-3xl bg-black" />
-          <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-24 rounded-tr-3xl bg-black/10" />
+        <div className="relative overflow-hidden rounded-[2rem] border-2 border-brand-slate bg-[#f6f8f3] p-6 sm:p-8">
+          <div className="pointer-events-none absolute right-0 top-0 h-14 w-28 rounded-bl-3xl bg-brand-slate" />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-24 rounded-tr-3xl bg-brand-green/25" />
 
           <div className="relative grid grid-cols-1 gap-6 lg:grid-cols-[1.25fr_1fr] lg:items-center">
             <div>
-              <span className="inline-flex -rotate-2 rounded-md bg-black px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+              <span className="inline-flex -rotate-2 rounded-md bg-brand-green px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
                 Auto Showcase
               </span>
               <h3 className="mt-3 text-xl font-semibold text-black sm:text-2xl">How AHJU Makes You Unforgettable</h3>
@@ -344,7 +344,7 @@ const HeroSection = () => {
 
               <Link
                 to="/u/sample"
-                className="mt-6 inline-flex rounded-full bg-black px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-black/85"
+                className="mt-6 inline-flex rounded-full bg-brand-green px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-brand-green/90"
               >
                 View Sample Profile Here
               </Link>
@@ -381,7 +381,7 @@ const HeroSection = () => {
         <div className="mt-7 flex justify-center">
           <Link
             to="/register"
-            className="inline-flex items-center gap-2 rounded-full bg-black px-7 py-3 text-sm font-semibold text-white transition hover:bg-black/85"
+            className="inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3 text-sm font-semibold text-white transition hover:bg-brand-green/90"
           >
             Get your AHJU NOW <ArrowRight className="h-4 w-4" />
           </Link>
@@ -389,7 +389,7 @@ const HeroSection = () => {
       </section>
 
       <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-black to-zinc-900 p-6 text-white sm:p-8">
+        <div className="relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal to-brand-slate p-6 text-white sm:p-8">
           <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute -right-16 -bottom-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
 
@@ -413,7 +413,7 @@ const HeroSection = () => {
 
               <Link
                 to="/register"
-                className="mt-6 inline-flex items-center gap-2 rounded-full bg-white px-6 py-2.5 text-sm font-semibold text-black transition hover:bg-white/90"
+                className="mt-6 inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-2.5 text-sm font-semibold text-white transition hover:bg-brand-green/90"
               >
                 Click here <ArrowRight className="h-4 w-4" />
               </Link>
@@ -485,13 +485,13 @@ const HeroSection = () => {
       </section>
 
       <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
-        <div className="relative overflow-hidden rounded-[2rem] border-2 border-black bg-[#f6f4ee] p-6 sm:p-8">
-          <div className="pointer-events-none absolute right-0 top-0 h-14 w-28 rounded-bl-3xl bg-black" />
-          <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-24 rounded-tr-3xl bg-black/10" />
+        <div className="relative overflow-hidden rounded-[2rem] border-2 border-brand-slate bg-[#f6f8f3] p-6 sm:p-8">
+          <div className="pointer-events-none absolute right-0 top-0 h-14 w-28 rounded-bl-3xl bg-brand-slate" />
+          <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-24 rounded-tr-3xl bg-brand-green/25" />
 
           <div className="relative grid grid-cols-1 gap-8 lg:grid-cols-[0.95fr_1.25fr] lg:items-start">
             <div>
-              <span className="inline-flex -rotate-2 rounded-md bg-black px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
+              <span className="inline-flex -rotate-2 rounded-md bg-brand-green px-3 py-1 text-[11px] font-semibold uppercase tracking-[0.12em] text-white">
                 AHJU AI Advantage
               </span>
               <h2 className="mt-4 text-2xl font-semibold tracking-tight text-black sm:text-3xl">Explore the AHJU Business Assistant</h2>
@@ -516,7 +516,7 @@ const HeroSection = () => {
                 {businessAssistantBenefits.map((item, index) => (
                   <article
                     key={item}
-                    className={`rounded-xl border-2 border-black/10 p-3 ${index % 2 === 0 ? 'bg-white' : 'bg-[#fff7e6]'}`}
+                    className={`rounded-xl border-2 border-brand-slate/15 p-3 ${index % 2 === 0 ? 'bg-white' : 'bg-brand-green/10'}`}
                   >
                     <p className="text-sm leading-relaxed text-black/80">{item}</p>
                   </article>
@@ -545,7 +545,7 @@ const HeroSection = () => {
       </section>
 
       <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-black via-zinc-900 to-black px-6 py-10 text-white sm:px-10">
+        <div className="relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal via-brand-slate to-brand-charcoal px-6 py-10 text-white sm:px-10">
           <div className="pointer-events-none absolute -left-12 top-4 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
 
@@ -571,7 +571,7 @@ const HeroSection = () => {
               <p className="mt-2 text-sm text-white/80">Get your AHJU card and start sharing your premium identity in one tap.</p>
               <Link
                 to="/register"
-                className="mt-4 inline-flex items-center gap-2 rounded-full bg-white px-6 py-3 text-sm font-semibold text-black transition hover:bg-white/90"
+                className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-green/90"
               >
                 GET YOUR AHJU <ArrowRight className="h-4 w-4" />
               </Link>
