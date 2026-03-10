@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react'
-import { motion, useInView } from 'framer-motion'
+import { motion, useInView, useReducedMotion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight, CheckCircle2, Sparkles } from 'lucide-react'
 
@@ -38,6 +38,8 @@ const AnimatedMetric = ({ end, suffix = '', duration = 1.6 }) => {
 }
 
 const HeroSection = () => {
+  const shouldReduceMotion = useReducedMotion()
+
   const showcaseImages = [
     { src: 'https://picsum.photos/id/1011/600/900', alt: 'Professional portrait sample' },
     { src: 'https://picsum.photos/id/1005/600/900', alt: 'Lifestyle profile sample' },
@@ -214,9 +216,18 @@ const HeroSection = () => {
     { end: 100, suffix: '%', label: 'Secure' },
   ]
 
+  const sectionReveal = shouldReduceMotion
+    ? {}
+    : {
+        initial: { opacity: 0, y: 30 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true, amount: 0.2 },
+        transition: { duration: 0.55, ease: 'easeOut' },
+      }
+
   return (
     <main>
-      <section className="mx-auto w-full max-w-[86rem] px-2 pb-14 pt-16 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 pb-14 pt-16 sm:px-3 lg:px-4">
         <div className="grid grid-cols-1 items-center gap-10 lg:grid-cols-2 lg:gap-12">
           <div className="max-w-2xl text-center lg:text-left">
             <p className="mb-4 inline-flex items-center gap-2 rounded-full border border-brand-green/30 bg-brand-green/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.14em] text-brand-slate">
@@ -230,15 +241,17 @@ const HeroSection = () => {
             </p>
 
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
-              <Link
-                to="/register"
-                className="inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-green/90"
-              >
-                Get Your AHJU Card <ArrowRight className="h-4 w-4" />
-              </Link>
-              <button className="rounded-full border border-brand-slate/20 bg-white px-6 py-3 text-sm font-medium text-brand-slate transition hover:bg-brand-green/10">
+              <motion.div whileHover={shouldReduceMotion ? {} : { y: -2, scale: 1.02 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
+                <Link
+                  to="/register"
+                  className="inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-medium text-white transition hover:bg-brand-green/90"
+                >
+                  Get Your AHJU Card <ArrowRight className="h-4 w-4" />
+                </Link>
+              </motion.div>
+              <motion.button whileHover={shouldReduceMotion ? {} : { y: -2 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }} className="rounded-full border border-brand-slate/20 bg-white px-6 py-3 text-sm font-medium text-brand-slate transition hover:bg-brand-green/10">
                 View Prestige Collection
-              </button>
+              </motion.button>
             </div>
           </div>
 
@@ -272,9 +285,9 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <div className="rounded-2xl border border-black/10 bg-white p-7 sm:p-9">
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
             <div className="overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
@@ -304,9 +317,9 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <div className="relative overflow-hidden rounded-[2rem] border-2 border-brand-slate bg-[#f6f8f3] p-6 sm:p-8">
           <div className="pointer-events-none absolute right-0 top-0 h-14 w-28 rounded-bl-3xl bg-brand-slate" />
           <div className="pointer-events-none absolute bottom-0 left-0 h-10 w-24 rounded-tr-3xl bg-brand-green/25" />
@@ -342,12 +355,14 @@ const HeroSection = () => {
               </div>
 
 
-              <Link
-                to="/u/sample"
-                className="mt-6 inline-flex rounded-full bg-brand-green px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-brand-green/90"
-              >
-                View Sample Profile Here
-              </Link>
+              <motion.div whileHover={shouldReduceMotion ? {} : { y: -2 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
+                <Link
+                  to="/u/sample"
+                  className="mt-6 inline-flex rounded-full bg-brand-green px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-brand-green/90"
+                >
+                  View Sample Profile Here
+                </Link>
+              </motion.div>
             </div>
 
             <div className="rounded-2xl border-2 border-black/10 bg-white p-3 shadow-[8px_8px_0_rgba(17,17,17,0.08)]">
@@ -361,13 +376,21 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <h2 className="text-2xl font-semibold tracking-tight text-black sm:text-3xl">Choose the Identity That Matches Your Future</h2>
         <div className="mt-5 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {collection.map((item) => (
-            <div key={item.name} className="overflow-hidden rounded-2xl border border-black/10 bg-white">
+          {collection.map((item, index) => (
+            <motion.div
+              key={item.name}
+              initial={shouldReduceMotion ? {} : { opacity: 0, y: 20 }}
+              whileInView={shouldReduceMotion ? {} : { opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={shouldReduceMotion ? {} : { duration: 0.35, delay: index * 0.06 }}
+              whileHover={shouldReduceMotion ? {} : { y: -4, scale: 1.01 }}
+              className="overflow-hidden rounded-2xl border border-black/10 bg-white"
+            >
               <img
                 src={item.image}
                 alt={item.alt}
@@ -375,20 +398,22 @@ const HeroSection = () => {
                 className="h-56 w-full object-cover sm:h-64"
               />
               <div className="border-t border-black/10 p-4 text-sm font-medium text-black/80">{item.name}</div>
-            </div>
+            </motion.div>
           ))}
         </div>
         <div className="mt-7 flex justify-center">
-          <Link
-            to="/register"
-            className="inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3 text-sm font-semibold text-white transition hover:bg-brand-green/90"
-          >
-            Get your AHJU NOW <ArrowRight className="h-4 w-4" />
-          </Link>
+          <motion.div whileHover={shouldReduceMotion ? {} : { y: -2 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
+            <Link
+              to="/register"
+              className="inline-flex items-center gap-2 rounded-full bg-brand-green px-7 py-3 text-sm font-semibold text-white transition hover:bg-brand-green/90"
+            >
+              Get your AHJU NOW <ArrowRight className="h-4 w-4" />
+            </Link>
+          </motion.div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <div className="relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal to-brand-slate p-6 text-white sm:p-8">
           <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute -right-16 -bottom-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
@@ -439,9 +464,9 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <div className="overflow-hidden rounded-3xl border border-black/10 bg-white p-6 sm:p-8">
           <div className="grid grid-cols-1 gap-6 lg:grid-cols-[0.95fr_1.25fr] lg:items-start">
             <div>
@@ -482,7 +507,7 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <div className="relative overflow-hidden rounded-[2rem] border-2 border-brand-slate bg-[#f6f8f3] p-6 sm:p-8">
@@ -527,7 +552,7 @@ const HeroSection = () => {
         </div>
       </section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-8 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-8 sm:px-3 lg:px-4">
         <div className="mb-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/55">Your Questions, Our Answers</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-black sm:text-3xl">FAQs about AHJU</h2>
@@ -542,9 +567,9 @@ const HeroSection = () => {
             </details>
           ))}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
         <div className="relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal via-brand-slate to-brand-charcoal px-6 py-10 text-white sm:px-10">
           <div className="pointer-events-none absolute -left-12 top-4 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
@@ -578,9 +603,9 @@ const HeroSection = () => {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="mx-auto w-full max-w-[86rem] px-2 pb-16 sm:px-3 lg:px-4">
+      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 pb-16 sm:px-3 lg:px-4">
         <div className="grid grid-cols-2 gap-3 rounded-2xl border border-black/10 bg-white p-4 sm:grid-cols-4 sm:p-6">
           {stats.map((stat) => (
             <motion.div
@@ -595,7 +620,7 @@ const HeroSection = () => {
             </motion.div>
           ))}
         </div>
-      </section>
+      </motion.section>
     </main>
   )
 }

@@ -1,15 +1,21 @@
 import React from 'react'
+import { motion } from 'framer-motion'
 import Header from '../components/Header'
 import HeroSection from '../components/HeroSection'
 import Footer from '../components/Footer'
 
 const Landing = () => {
   return (
-    <div className="min-h-screen bg-site text-black">
+    <motion.div
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.35, ease: 'easeOut' }}
+      className="min-h-screen bg-site text-black"
+    >
       <Header />
       <HeroSection />
       <Footer />
-    </div>
+    </motion.div>
   )
 }
 

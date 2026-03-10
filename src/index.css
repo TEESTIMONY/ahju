@@ -38,6 +38,15 @@ body {
   background: var(--site-bg);
 }
 
+.auth-grid-bg {
+  background-image:
+    linear-gradient(to right, rgba(47, 59, 64, 0.07) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(47, 59, 64, 0.07) 1px, transparent 1px),
+    radial-gradient(circle at 10% 20%, rgba(84, 180, 53, 0.11), transparent 36%),
+    radial-gradient(circle at 90% 80%, rgba(47, 59, 64, 0.1), transparent 40%);
+  background-size: 30px 30px, 30px 30px, auto, auto;
+}
+
 @keyframes hero-scroll-up {
   0% {
     transform: translateY(0);

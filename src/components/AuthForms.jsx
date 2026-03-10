@@ -1,150 +1,87 @@
-import React, { useState } from 'react'
+import React from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { Eye, EyeOff, Mail, Lock, User as UserIcon } from 'lucide-react'
+import { ArrowRight, ShieldCheck } from 'lucide-react'
+import ahjuLogo from '../../logo.jpg'
 
 const AuthForms = ({ mode = 'login' }) => {
-  const [isLogin, setIsLogin] = useState(mode === 'login')
-  const [showPassword, setShowPassword] = useState(false)
-  const [formData, setFormData] = useState({
-    username: '',
-    email: '',
-    password: '',
-    confirmPassword: ''
-  })
+  const isLogin = mode === 'login'
 
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value })
-  }
-
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Handle authentication logic here
-    console.log('Form submitted:', formData)
+  const handleGoogleContinue = () => {
+    // TODO: wire this to Firebase/Auth provider
+    console.log('Continue with Google')
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="relative z-10 min-h-screen">
       <motion.div
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.8, ease: "easeOut" }}
-        className="w-full max-w-md glass rounded-2xl p-8 border border-white/20"
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.5, ease: 'easeOut' }}
+        className="grid min-h-screen lg:grid-cols-2"
       >
-        <div className="text-center mb-8">
-          <div className="w-16 h-16 bg-primary rounded-full flex items-center justify-center mx-auto mb-4">
-            <UserIcon className="w-8 h-8 text-dark-900" />
-          </div>
-          <h2 className="font-heading text-2xl font-bold mb-2">
-            {isLogin ? 'Welcome Back' : 'Create Account'}
-          </h2>
-          <p className="text-white/70">
-            {isLogin ? 'Sign in to your account' : 'Join LinkHub and start connecting'}
-          </p>
-        </div>
+        <div
+          className="hidden lg:block bg-cover bg-center"
+          style={{ backgroundImage: `url('${isLogin ? '/signin.png' : '/signup_image.png'}')` }}
+        />
 
-        <form onSubmit={handleSubmit} className="space-y-6">
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Username</label>
-              <div className="relative">
-                <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
-                <input
-                  type="text"
-                  name="username"
-                  value={formData.username}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-white/50 transition-all"
-                  placeholder="Enter your username"
-                  required
-                />
-              </div>
-            </div>
-          )}
-
-          <div>
-            <label className="block text-sm font-medium mb-2">Email</label>
-            <div className="relative">
-              <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
-              <input
-                type="email"
-                name="email"
-                value={formData.email}
-                onChange={handleChange}
-                className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-white/50 transition-all"
-                placeholder="Enter your email"
-                required
-              />
+        <div className="relative flex min-h-screen items-center justify-center bg-white px-6 py-10 sm:px-10">
+          <div className="absolute left-6 top-6 sm:left-10 sm:top-8">
+            <div className="flex items-center gap-3">
+              <img src={ahjuLogo} alt="AHJU logo" className="h-10 w-10 rounded-md object-cover" />
+              <span className="text-base font-semibold tracking-[0.1em] text-brand-charcoal">AHJU</span>
             </div>
           </div>
 
-          <div>
-            <label className="block text-sm font-medium mb-2">Password</label>
-            <div className="relative">
-              <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
-              <input
-                type={showPassword ? 'text' : 'password'}
-                name="password"
-                value={formData.password}
-                onChange={handleChange}
-                className="w-full pl-10 pr-12 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-white/50 transition-all"
-                placeholder="Enter your password"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-white/50 hover:text-white/70"
-              >
-                {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
-              </button>
-            </div>
-          </div>
+          <div className="w-full max-w-md">
+            <p className="text-sm font-medium uppercase tracking-[0.14em] text-brand-green/90">
+              {isLogin ? 'Welcome back' : 'Get started'}
+            </p>
+            <h2 className="mt-2 text-3xl font-bold leading-tight text-brand-charcoal sm:text-4xl">
+              {isLogin ? 'Sign in to your AHJU account' : 'Create your AHJU account'}
+            </h2>
+            <p className="mt-3 text-brand-slate/75">
+              {isLogin
+                ? 'Continue securely with Google to access your profile, links, and analytics dashboard.'
+                : 'Set up your professional digital identity in minutes and manage everything from one dashboard.'}
+            </p>
 
-          {!isLogin && (
-            <div>
-              <label className="block text-sm font-medium mb-2">Confirm Password</label>
-              <div className="relative">
-                <Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-white/50" />
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  className="w-full pl-10 pr-4 py-3 bg-white/10 border border-white/20 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary focus:border-transparent placeholder-white/50 transition-all"
-                  placeholder="Confirm your password"
-                  required
-                />
-              </div>
-            </div>
-          )}
-
-          {isLogin && (
-            <div className="flex justify-end">
-              <Link to="/forgot-password" className="text-sm text-primary hover:text-secondary transition-colors">
-                Forgot password?
-              </Link>
-            </div>
-          )}
-
-          <button
-            type="submit"
-            className="w-full py-4 bg-gradient-to-r from-primary to-secondary rounded-lg font-semibold hover:shadow-lg hover:shadow-primary/30 transform hover:scale-105 transition-all duration-200 border border-primary/30"
-          >
-            {isLogin ? 'Sign In' : 'Create Account'}
-          </button>
-        </form>
-
-        <div className="mt-6 text-center">
-          <p className="text-white/70">
-            {isLogin ? 'Don\'t have an account? ' : 'Already have an account? '}
-            <button
-              onClick={() => setIsLogin(!isLogin)}
-              className="text-primary hover:text-secondary transition-colors font-medium"
+            <motion.button
+              whileHover={{ y: -2, scale: 1.01 }}
+              whileTap={{ scale: 0.98 }}
+              onClick={handleGoogleContinue}
+              className="mt-7 w-full flex items-center justify-center gap-3 py-3.5 px-4 rounded-xl border border-brand-slate/20 bg-white text-brand-charcoal font-semibold transition hover:border-brand-green/45 hover:bg-brand-green/5"
             >
-              {isLogin ? 'Sign up' : 'Sign in'}
-            </button>
-          </p>
+              <svg className="h-5 w-5" viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#4285F4" d="M23.49 12.27c0-.79-.07-1.55-.2-2.27H12v4.31h6.45a5.5 5.5 0 0 1-2.39 3.6v2.99h3.87c2.26-2.08 3.56-5.15 3.56-8.63Z" />
+                <path fill="#34A853" d="M12 24c3.24 0 5.95-1.07 7.93-2.9l-3.87-2.99c-1.07.72-2.44 1.14-4.06 1.14-3.12 0-5.77-2.1-6.71-4.93H1.29v3.1A12 12 0 0 0 12 24Z" />
+                <path fill="#FBBC05" d="M5.29 14.32A7.21 7.21 0 0 1 4.92 12c0-.81.14-1.6.37-2.32v-3.1H1.29A12 12 0 0 0 0 12c0 1.93.46 3.76 1.29 5.42l4-3.1Z" />
+                <path fill="#EA4335" d="M12 4.77c1.76 0 3.35.6 4.59 1.78l3.44-3.44C17.94 1.14 15.24 0 12 0A12 12 0 0 0 1.29 6.58l4 3.1C6.23 6.87 8.88 4.77 12 4.77Z" />
+              </svg>
+              Continue securely with Google
+              <ArrowRight className="h-4 w-4" />
+            </motion.button>
+
+            <div className="mt-4 rounded-xl border border-brand-green/25 bg-brand-green/10 px-4 py-3 text-sm text-brand-slate/90">
+              <p className="flex items-center gap-2 font-medium">
+                <ShieldCheck className="h-4 w-4 text-brand-green" />
+                Secure Google sign-in. No password needed.
+              </p>
+            </div>
+
+            <div className="mt-6 text-center">
+              <p className="text-brand-slate/75">
+                {isLogin ? 'Don\'t have an account? ' : 'Already have an account? '}
+                <Link to={isLogin ? '/register' : '/login'} className="text-brand-green hover:text-brand-slate transition-colors font-semibold">
+                  {isLogin ? 'Create one now' : 'Sign in'}
+                </Link>
+              </p>
+            </div>
+
+            <p className="mt-5 text-center text-xs leading-relaxed text-brand-slate/55">
+              By continuing, you agree to AHJU&apos;s Terms of Service and Privacy Policy.
+            </p>
+          </div>
         </div>
       </motion.div>
     </div>
