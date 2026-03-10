@@ -45,6 +45,8 @@ const chartData = [
   { day: 'Sun', views: 240, clicks: 71 },
 ]
 
+const dashboardLogo = new URL('../../logo.jpg', import.meta.url).href
+
 const initialLinks = [
   { id: 1, title: 'Instagram', url: 'https://instagram.com/ahju', clicks: 120, active: true },
   { id: 2, title: 'Portfolio', url: 'https://ahju.me/portfolio', clicks: 78, active: true },
@@ -57,10 +59,10 @@ const initialContacts = [
 ]
 
 const lookbookItems = [
-  { name: 'Classic PVC', image: '/AHJU Classic PVC Card.jpg' },
-  { name: 'Black Card', image: '/AHJU Black Card.jpg' },
-  { name: 'Bamboo Card', image: '/AHJU Bamboo Card.jpg' },
-  { name: 'Key Tag', image: '/AHJU Key Tag.jpg' },
+  { name: 'Classic PVC', image: new URL('../../AHJU Classic PVC Card.jpg', import.meta.url).href },
+  { name: 'Black Card', image: new URL('../../AHJU Black Card.jpg', import.meta.url).href },
+  { name: 'Bamboo Card', image: new URL('../../AHJU Bamboo Card.jpg', import.meta.url).href },
+  { name: 'Key Tag', image: new URL('../../AHJU Key Tag.jpg', import.meta.url).href },
 ]
 
 const linkInBioUrl = 'https://ahju.me/ahju'
@@ -75,7 +77,7 @@ const Dashboard = () => {
   const [socialLink, setSocialLink] = useState('')
   const [socialLoading, setSocialLoading] = useState(false)
   const [appearance, setAppearance] = useState({
-    profileImage: '/logo.jpg',
+    profileImage: dashboardLogo,
     background: '#f6f8f3',
     accent: '#54b435',
     displayName: 'AHJU User',
@@ -136,10 +138,10 @@ const Dashboard = () => {
     setSocialLoading(true)
     setTimeout(() => {
       const mockedSocialImages = [
-        { name: 'Social Post 1', image: '/AHJU Black Card.jpg' },
-        { name: 'Social Post 2', image: '/AHJU Bamboo Card.jpg' },
-        { name: 'Social Post 3', image: '/AHJU Classic PVC Card.jpg' },
-        { name: 'Social Post 4', image: '/AHJU Key Tag.jpg' },
+        { name: 'Social Post 1', image: new URL('../../AHJU Black Card.jpg', import.meta.url).href },
+        { name: 'Social Post 2', image: new URL('../../AHJU Bamboo Card.jpg', import.meta.url).href },
+        { name: 'Social Post 3', image: new URL('../../AHJU Classic PVC Card.jpg', import.meta.url).href },
+        { name: 'Social Post 4', image: new URL('../../AHJU Key Tag.jpg', import.meta.url).href },
       ]
 
       setLookbookGallery((prev) => [...mockedSocialImages, ...prev])
@@ -160,7 +162,7 @@ const Dashboard = () => {
 
         <aside className={`fixed inset-y-0 left-0 z-40 flex w-[86vw] max-w-[320px] flex-col overflow-y-auto rounded-r-2xl border-r border-brand-slate/10 bg-white p-4 shadow-2xl transition-transform duration-300 lg:static lg:min-h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-none lg:p-5 lg:shadow-none ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="mb-6 flex items-center gap-3 rounded-xl border border-brand-slate/10 bg-brand-green/5 p-3">
-            <img src="/logo.jpg" alt="AHJU" className="h-10 w-10 rounded-md object-cover" />
+            <img src={dashboardLogo} alt="AHJU" className="h-10 w-10 rounded-md object-cover" />
             <div>
               <p className="text-xs uppercase tracking-[0.14em] text-brand-slate/60">Workspace</p>
               <p className="font-semibold text-brand-charcoal">AHJU Dashboard</p>
@@ -214,7 +216,7 @@ const Dashboard = () => {
         <main className="min-w-0 overflow-x-hidden px-3 py-4 sm:px-4 md:px-7 md:py-6 lg:px-10">
           <div className="mb-4 flex items-center justify-between rounded-xl border border-brand-slate/10 bg-white px-3 py-2.5 lg:hidden">
             <div className="flex items-center gap-2">
-              <img src="/logo.jpg" alt="AHJU" className="h-6 w-6 rounded object-cover" />
+              <img src={dashboardLogo} alt="AHJU" className="h-6 w-6 rounded object-cover" />
               <p className="text-sm font-semibold text-brand-charcoal">AHJU Dashboard</p>
             </div>
             <button
