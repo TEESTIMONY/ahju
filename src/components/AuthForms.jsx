@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom'
 import { ArrowRight, ShieldCheck } from 'lucide-react'
 import ahjuLogo from '../../logo.jpg'
 
+const signInImage = new URL('../../signin.png', import.meta.url).href
+const signUpImage = new URL('../../signup_image.png', import.meta.url).href
+
 const AuthForms = ({ mode = 'login' }) => {
   const isLogin = mode === 'login'
 
@@ -22,7 +25,7 @@ const AuthForms = ({ mode = 'login' }) => {
       >
         <div
           className="hidden lg:block bg-cover bg-center"
-          style={{ backgroundImage: `url('${isLogin ? '/signin.png' : '/signup_image.png'}')` }}
+          style={{ backgroundImage: `url('${isLogin ? signInImage : signUpImage}')` }}
         />
 
         <div className="relative flex min-h-screen items-center justify-center bg-white px-6 py-10 sm:px-10">

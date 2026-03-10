@@ -3,6 +3,8 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight } from 'lucide-react'
 
+const logoImage = new URL('../../logo.jpg', import.meta.url).href
+
 const Header = ({ isLoggedIn = false }) => {
   return (
     <motion.header
@@ -14,7 +16,7 @@ const Header = ({ isLoggedIn = false }) => {
       <div className="mx-auto flex w-full max-w-[86rem] items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
         <Link to="/" className="flex items-center gap-2">
-          <img src="/logo.jpg" alt="AHJU logo" className="h-8 w-8 rounded-full object-cover shadow-sm shadow-brand-green/35" />
+          <img src={logoImage} alt="AHJU logo" className="h-8 w-8 rounded-full object-cover shadow-sm shadow-brand-green/35" />
           <h1 className="text-base font-semibold tracking-tight text-brand-charcoal">AHJU</h1>
         </Link>
         </motion.div>
