@@ -414,7 +414,7 @@ const HeroSection = () => {
       </motion.section>
 
       <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal to-brand-slate p-6 text-white sm:p-8">
+        <div className="built-different-section relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal to-brand-slate p-6 text-white sm:p-8">
           <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute -right-16 -bottom-16 h-56 w-56 rounded-full bg-white/10 blur-3xl" />
 
@@ -570,7 +570,7 @@ const HeroSection = () => {
       </motion.section>
 
       <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-10 sm:px-3 lg:px-4">
-        <div className="relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal via-brand-slate to-brand-charcoal px-6 py-10 text-white sm:px-10">
+        <div className="identity-deserves-section relative overflow-hidden rounded-3xl border border-brand-slate/20 bg-gradient-to-br from-brand-charcoal via-brand-slate to-brand-charcoal px-6 py-10 text-white sm:px-10">
           <div className="pointer-events-none absolute -left-12 top-4 h-40 w-40 rounded-full bg-white/10 blur-3xl" />
           <div className="pointer-events-none absolute -right-12 bottom-0 h-44 w-44 rounded-full bg-white/10 blur-3xl" />
 

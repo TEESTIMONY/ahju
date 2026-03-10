@@ -28,16 +28,19 @@ export const ThemeProvider = ({ children }) => {
   }, [theme])
 
   useEffect(() => {
-    const brandGradient = 'linear-gradient(135deg, #f6f8f3 0%, #eef5e8 100%)'
-    document.body.style.background = brandGradient
-  }, [])
+    document.documentElement.classList.toggle('dark', !!theme.isDark)
+  }, [theme.isDark])
 
   const updateTheme = (newTheme) => {
     setTheme({ ...theme, ...newTheme })
   }
 
+  const toggleDarkMode = () => {
+    setTheme((prev) => ({ ...prev, isDark: !prev.isDark }))
+  }
+
   return (
-    <ThemeContext.Provider value={{ theme, updateTheme }}>
+    <ThemeContext.Provider value={{ theme, updateTheme, toggleDarkMode }}>
       {children}
     </ThemeContext.Provider>
   )

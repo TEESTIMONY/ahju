@@ -19,6 +19,19 @@
   --brand-charcoal: #222222;
 }
 
+.dark {
+  --site-bg: #0f1417;
+  --text-main: #f3f6f7;
+  --text-muted: #b7c3c8;
+  --brand-green: #72d552;
+  --brand-slate: #c4d0d5;
+  --brand-charcoal: #f3f6f7;
+  --color-brand-charcoal: #f3f6f7;
+  --color-brand-slate: #c4d0d5;
+  --color-dark-900: #0f1417;
+  --color-dark-800: #1b2428;
+}
+
 * {
   box-sizing: border-box;
 }
@@ -32,10 +45,149 @@ body {
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
+  transition: background-color 0.25s ease, color 0.25s ease;
 }
 
 .bg-site {
   background: var(--site-bg);
+}
+
+.dark .bg-white {
+  background-color: #1b2428 !important;
+}
+
+.dark .bg-white\/90 {
+  background-color: rgba(27, 36, 40, 0.9) !important;
+}
+
+.dark .border-brand-slate\/10,
+.dark .border-brand-slate\/15,
+.dark .border-brand-slate\/20,
+.dark .border-brand-slate\/25 {
+  border-color: rgba(196, 208, 213, 0.22) !important;
+}
+
+.dark .text-black,
+.dark .text-black\/80,
+.dark .text-black\/75,
+.dark .text-black\/70,
+.dark .text-black\/65,
+.dark .text-black\/55,
+.dark .text-black\/45 {
+  color: var(--text-main) !important;
+}
+
+.dark .bg-black\[\/0\.02\],
+.dark .bg-black\[\/0\.03\],
+.dark .bg-black\/\[0\.02\],
+.dark .bg-black\/\[0\.03\] {
+  background-color: rgba(255, 255, 255, 0.04) !important;
+}
+
+.dark .border-black\/10 {
+  border-color: rgba(196, 208, 213, 0.24) !important;
+}
+
+.dark .bg-\[\#f6f8f3\] {
+  background-color: #121a1f !important;
+}
+
+.dark .from-white,
+.dark .to-white {
+  --tw-gradient-from: #1b2428 var(--tw-gradient-from-position) !important;
+  --tw-gradient-to: rgb(27 36 40 / 0) var(--tw-gradient-to-position) !important;
+}
+
+.dark .built-different-section,
+.dark .identity-deserves-section {
+  color: #111111 !important;
+  background: linear-gradient(135deg, #dfe7ea 0%, #cfd9de 100%) !important;
+}
+
+.dark .built-different-section h2,
+.dark .built-different-section h3,
+.dark .built-different-section p,
+.dark .built-different-section span,
+.dark .identity-deserves-section h2,
+.dark .identity-deserves-section h3,
+.dark .identity-deserves-section p,
+.dark .identity-deserves-section span {
+  color: #111111 !important;
+}
+
+.dark .built-different-section .text-white,
+.dark .built-different-section .text-white\/85,
+.dark .built-different-section .text-white\/80,
+.dark .built-different-section .text-white\/75,
+.dark .built-different-section .text-white\/70,
+.dark .identity-deserves-section .text-white,
+.dark .identity-deserves-section .text-white\/85,
+.dark .identity-deserves-section .text-white\/80,
+.dark .identity-deserves-section .text-white\/75,
+.dark .identity-deserves-section .text-white\/70 {
+  color: #111111 !important;
+}
+
+.dark .built-different-section .border-white\/20,
+.dark .built-different-section .border-white\/25,
+.dark .identity-deserves-section .border-white\/20,
+.dark .identity-deserves-section .border-white\/25 {
+  border-color: rgba(17, 17, 17, 0.2) !important;
+}
+
+.dark .built-different-section .bg-white\/10,
+.dark .identity-deserves-section .bg-white\/10 {
+  background-color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.dark .built-different-section a.bg-brand-green,
+.dark .identity-deserves-section a.bg-brand-green {
+  color: #ffffff !important;
+}
+
+/* Swap primary button tones in dark mode:
+   #2f3b40 <-> #54b435 */
+.dark button.bg-\[\#2f3b40\],
+.dark a.bg-\[\#2f3b40\],
+.dark [role='button'].bg-\[\#2f3b40\] {
+  background-color: #54b435 !important;
+}
+
+.dark button.hover\:bg-\[\#253035\]:hover,
+.dark a.hover\:bg-\[\#253035\]:hover,
+.dark [role='button'].hover\:bg-\[\#253035\]:hover {
+  background-color: #489b2d !important;
+}
+
+.dark button.bg-brand-green,
+.dark a.bg-brand-green,
+.dark [role='button'].bg-brand-green {
+  background-color: #2f3b40 !important;
+}
+
+.dark button.hover\:bg-\[\#489b2d\]:hover,
+.dark a.hover\:bg-\[\#489b2d\]:hover,
+.dark [role='button'].hover\:bg-\[\#489b2d\]:hover,
+.dark button.hover\:bg-brand-green\/90:hover,
+.dark a.hover\:bg-brand-green\/90:hover,
+.dark [role='button'].hover\:bg-brand-green\/90:hover {
+  background-color: #253035 !important;
+}
+
+/* Keep dashboard action buttons green in dark mode */
+.dark .dashboard-page button.bg-brand-green,
+.dark .dashboard-page a.bg-brand-green,
+.dark .dashboard-page [role='button'].bg-brand-green {
+  background-color: #54b435 !important;
+}
+
+.dark .dashboard-page button.hover\:bg-\[\#489b2d\]:hover,
+.dark .dashboard-page a.hover\:bg-\[\#489b2d\]:hover,
+.dark .dashboard-page [role='button'].hover\:bg-\[\#489b2d\]:hover,
+.dark .dashboard-page button.hover\:bg-brand-green\/90:hover,
+.dark .dashboard-page a.hover\:bg-brand-green\/90:hover,
+.dark .dashboard-page [role='button'].hover\:bg-brand-green\/90:hover {
+  background-color: #489b2d !important;
 }
 
 .auth-grid-bg {

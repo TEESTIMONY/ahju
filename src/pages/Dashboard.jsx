@@ -28,7 +28,7 @@ import {
 } from 'lucide-react'
 
 const TABS = [
-  { key: 'insights', label: 'Insights', icon: BarChart3 },
+  { key: 'overview', label: 'Overview', icon: BarChart3 },
   { key: 'links', label: 'Links', icon: LinkIcon },
   { key: 'appearance', label: 'Appearance', icon: Palette },
   { key: 'contacts', label: 'Contacts', icon: Contact },
@@ -53,9 +53,9 @@ const initialLinks = [
 ]
 
 const initialContacts = [
-  { id: 1, name: 'Aisha Bello', source: 'Card Tap', date: 'Today' },
-  { id: 2, name: 'Tunde A.', source: 'Profile Link', date: 'Yesterday' },
-  { id: 3, name: 'Miriam O.', source: 'QR Scan', date: '2 days ago' },
+  { id: 1, name: 'Aisha Bello', email: 'aisha@email.com', phone: '+2348012345678', source: 'Card Tap', date: 'Today' },
+  { id: 2, name: 'Tunde A.', email: 'tunde@email.com', phone: '+2348098765432', source: 'Profile Link', date: 'Yesterday' },
+  { id: 3, name: 'Miriam O.', email: 'miriam@email.com', phone: '+2348122222222', source: 'QR Scan', date: '2 days ago' },
 ]
 
 const lookbookItems = [
@@ -66,23 +66,113 @@ const lookbookItems = [
 ]
 
 const linkInBioUrl = 'https://ahju.me/ahju'
+const username = 'ahju'
+
+const FONT_OPTIONS = [
+  { label: 'Inter', value: 'Inter, sans-serif' },
+  { label: 'Poppins', value: 'Poppins, sans-serif' },
+  { label: 'Montserrat', value: 'Montserrat, sans-serif' },
+  { label: 'Playfair Display', value: '"Playfair Display", serif' },
+]
+
+const THEME_PRESETS = [
+  {
+    key: 'minimal-light',
+    name: 'Minimal Light',
+    pageBg: '#f6f8f3',
+    cardBg: '#ffffff',
+    textColor: '#223136',
+    mutedText: '#5f7076',
+    buttonBg: '#2f3b40',
+    accent: '#54b435',
+  },
+  {
+    key: 'dark-pro',
+    name: 'Dark Pro',
+    pageBg: '#101619',
+    cardBg: '#1b2428',
+    textColor: '#f4f7f8',
+    mutedText: '#b6c2c7',
+    buttonBg: '#54b435',
+    accent: '#7ed35f',
+  },
+  {
+    key: 'sand-gold',
+    name: 'Sand & Gold',
+    pageBg: '#f3eee5',
+    cardBg: '#fffaf1',
+    textColor: '#3f2f1f',
+    mutedText: '#78644d',
+    buttonBg: '#946c34',
+    accent: '#c7974a',
+  },
+  {
+    key: 'sunset-glow',
+    name: 'Sunset Glow',
+    pageBg: '#fff1ea',
+    cardBg: '#ffffff',
+    textColor: '#40261d',
+    mutedText: '#7b5044',
+    buttonBg: '#e86f3f',
+    accent: '#ff9f66',
+  },
+  {
+    key: 'ocean-breeze',
+    name: 'Ocean Breeze',
+    pageBg: '#e9f7fa',
+    cardBg: '#ffffff',
+    textColor: '#16343d',
+    mutedText: '#4f7077',
+    buttonBg: '#1c7f96',
+    accent: '#45bcd7',
+  },
+  {
+    key: 'royal-violet',
+    name: 'Royal Violet',
+    pageBg: '#f2efff',
+    cardBg: '#ffffff',
+    textColor: '#2e2350',
+    mutedText: '#655a88',
+    buttonBg: '#5a46b2',
+    accent: '#8b77e8',
+  },
+  {
+    key: 'forest-luxe',
+    name: 'Forest Luxe',
+    pageBg: '#edf5ef',
+    cardBg: '#ffffff',
+    textColor: '#1f3427',
+    mutedText: '#587061',
+    buttonBg: '#2f6f44',
+    accent: '#61a47a',
+  },
+]
 
 const Dashboard = () => {
-  const [activeTab, setActiveTab] = useState('insights')
+  const [activeTab, setActiveTab] = useState('overview')
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
   const [links, setLinks] = useState(initialLinks)
   const [newLink, setNewLink] = useState({ title: '', url: '' })
   const [copiedBioLink, setCopiedBioLink] = useState(false)
+  const [contactLeads, setContactLeads] = useState(initialContacts)
   const [lookbookGallery, setLookbookGallery] = useState(lookbookItems)
   const [socialLink, setSocialLink] = useState('')
   const [socialLoading, setSocialLoading] = useState(false)
+  const [appearanceSaved, setAppearanceSaved] = useState(false)
+  const [publicContactForm, setPublicContactForm] = useState({ name: '', email: '', phone: '' })
+  const [connectSaved, setConnectSaved] = useState(false)
   const [appearance, setAppearance] = useState({
+    selectedTheme: 'minimal-light',
     profileImage: dashboardLogo,
-    background: '#f6f8f3',
-    accent: '#54b435',
+    heroImage: new URL('../../signup_sample.png', import.meta.url).href,
     displayName: 'AHJU User',
-    headline: 'Digital Identity. One Tap.',
+    shortBio: 'Digital Identity. One Tap.',
+    nameFont: 'Inter, sans-serif',
+    nameColor: '#223136',
   })
+
+  const activeTheme =
+    THEME_PRESETS.find((theme) => theme.key === appearance.selectedTheme) || THEME_PRESETS[0]
 
   const totalViews = useMemo(
     () => chartData.reduce((acc, item) => acc + item.views, 0),
@@ -149,8 +239,42 @@ const Dashboard = () => {
     }, 800)
   }
 
+  const handleAppearanceImageUpload = (e, type) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+    const imageUrl = URL.createObjectURL(file)
+    setAppearance((prev) => ({ ...prev, [type]: imageUrl }))
+    e.target.value = ''
+  }
+
+  const submitPublicContact = (e) => {
+    e.preventDefault()
+    if (!publicContactForm.name.trim() || !publicContactForm.email.trim() || !publicContactForm.phone.trim()) return
+
+    setContactLeads((prev) => [
+      {
+        id: Date.now(),
+        name: publicContactForm.name.trim(),
+        email: publicContactForm.email.trim(),
+        phone: publicContactForm.phone.trim(),
+        source: 'Profile Connect Form',
+        date: 'Just now',
+      },
+      ...prev,
+    ])
+
+    setPublicContactForm({ name: '', email: '', phone: '' })
+    setConnectSaved(true)
+    setTimeout(() => setConnectSaved(false), 1800)
+  }
+
+  const saveAppearanceSettings = () => {
+    setAppearanceSaved(true)
+    setTimeout(() => setAppearanceSaved(false), 1800)
+  }
+
   return (
-    <div className="min-h-screen bg-site">
+    <div className="dashboard-page min-h-screen bg-site">
       <div className="grid min-h-screen w-full lg:grid-cols-[300px_1fr]">
         {isSidebarOpen && (
           <button
@@ -235,8 +359,30 @@ const Dashboard = () => {
             </div>
           </div>
 
-          {activeTab === 'insights' && (
+          {activeTab === 'overview' && (
             <div className="space-y-6">
+              <div className="grid gap-3 md:grid-cols-2">
+                <div className="rounded-2xl border border-brand-slate/10 bg-white p-4 md:p-5">
+                  <p className="text-sm text-brand-slate/70">Username</p>
+                  <p className="mt-1 text-2xl font-bold text-brand-charcoal">@{username}</p>
+                </div>
+                <div className="rounded-2xl border border-brand-slate/10 bg-white p-4 md:p-5">
+                  <p className="text-sm text-brand-slate/70">Link in Bio</p>
+                  <div className="mt-2 flex items-center gap-2 rounded-xl border border-brand-slate/10 bg-white px-3 py-2.5">
+                    <p className="truncate text-sm text-brand-slate">{linkInBioUrl}</p>
+                    <button
+                      type="button"
+                      onClick={copyBioLink}
+                      className="ml-auto inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-brand-slate/15 text-brand-slate hover:bg-brand-slate/10"
+                      aria-label="Copy Link in Bio"
+                      title={copiedBioLink ? 'Copied!' : 'Copy link'}
+                    >
+                      {copiedBioLink ? <Check className="h-4 w-4 text-brand-green" /> : <Copy className="h-4 w-4" />}
+                    </button>
+                  </div>
+                </div>
+              </div>
+
               <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide md:grid md:overflow-visible md:pb-0 md:gap-4 md:grid-cols-3">
                 <div className="min-w-[170px] rounded-2xl border border-brand-slate/10 bg-white p-4 md:min-w-0 md:p-5">
                   <p className="text-sm text-brand-slate/70">Total Views</p>
@@ -399,9 +545,35 @@ const Dashboard = () => {
                     onChange={(e) => setAppearance((prev) => ({ ...prev, profileImage: e.target.value }))}
                     className="h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
                   />
+                  <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-brand-slate/20 px-3 py-2 text-xs font-medium text-brand-charcoal hover:bg-brand-slate/5">
+                    Upload profile image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleAppearanceImageUpload(e, 'profileImage')}
+                    />
+                  </label>
                 </label>
                 <label className="block space-y-1">
-                  <span className="text-sm text-brand-slate/70">Display name</span>
+                  <span className="text-sm text-brand-slate/70">Hero image URL</span>
+                  <input
+                    value={appearance.heroImage}
+                    onChange={(e) => setAppearance((prev) => ({ ...prev, heroImage: e.target.value }))}
+                    className="h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                  />
+                  <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-brand-slate/20 px-3 py-2 text-xs font-medium text-brand-charcoal hover:bg-brand-slate/5">
+                    Upload hero image
+                    <input
+                      type="file"
+                      accept="image/*"
+                      className="hidden"
+                      onChange={(e) => handleAppearanceImageUpload(e, 'heroImage')}
+                    />
+                  </label>
+                </label>
+                <label className="block space-y-1">
+                  <span className="text-sm text-brand-slate/70">Name</span>
                   <input
                     value={appearance.displayName}
                     onChange={(e) => setAppearance((prev) => ({ ...prev, displayName: e.target.value }))}
@@ -409,49 +581,163 @@ const Dashboard = () => {
                   />
                 </label>
                 <label className="block space-y-1">
-                  <span className="text-sm text-brand-slate/70">Headline</span>
+                  <span className="text-sm text-brand-slate/70">Short bio</span>
                   <input
-                    value={appearance.headline}
-                    onChange={(e) => setAppearance((prev) => ({ ...prev, headline: e.target.value }))}
+                    value={appearance.shortBio}
+                    onChange={(e) => setAppearance((prev) => ({ ...prev, shortBio: e.target.value }))}
                     className="h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
                   />
                 </label>
 
                 <div className="grid grid-cols-2 gap-3">
                   <label className="block space-y-1">
-                    <span className="text-sm text-brand-slate/70">Background</span>
-                    <input
-                      type="color"
-                      value={appearance.background}
-                      onChange={(e) => setAppearance((prev) => ({ ...prev, background: e.target.value }))}
-                      className="h-11 w-full rounded-xl border border-brand-slate/20 p-1"
-                    />
+                    <span className="text-sm text-brand-slate/70">Name font</span>
+                    <select
+                      value={appearance.nameFont}
+                      onChange={(e) => setAppearance((prev) => ({ ...prev, nameFont: e.target.value }))}
+                      className="h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                    >
+                      {FONT_OPTIONS.map((font) => (
+                        <option key={font.value} value={font.value}>{font.label}</option>
+                      ))}
+                    </select>
                   </label>
                   <label className="block space-y-1">
-                    <span className="text-sm text-brand-slate/70">Accent</span>
+                    <span className="text-sm text-brand-slate/70">Name font color</span>
                     <input
                       type="color"
-                      value={appearance.accent}
-                      onChange={(e) => setAppearance((prev) => ({ ...prev, accent: e.target.value }))}
+                      value={appearance.nameColor}
+                      onChange={(e) => setAppearance((prev) => ({ ...prev, nameColor: e.target.value }))}
                       className="h-11 w-full rounded-xl border border-brand-slate/20 p-1"
                     />
                   </label>
+                </div>
+
+                <div className="space-y-2 pt-1">
+                  <p className="text-sm font-medium text-brand-charcoal">Theme</p>
+                  <p className="text-xs text-brand-slate/70">Pick a full theme for how your profile appears when link is opened.</p>
+                  <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+                    {THEME_PRESETS.map((theme) => (
+                      <button
+                        key={theme.key}
+                        type="button"
+                        onClick={() => setAppearance((prev) => ({ ...prev, selectedTheme: theme.key }))}
+                        className={`rounded-xl border p-2 text-left transition ${appearance.selectedTheme === theme.key ? 'border-brand-green ring-2 ring-brand-green/30' : 'border-brand-slate/15 hover:border-brand-slate/30'}`}
+                        style={{ backgroundColor: theme.cardBg }}
+                      >
+                        <p className="text-xs font-semibold" style={{ color: theme.textColor }}>{theme.name}</p>
+                        <div className="mt-2 flex gap-1">
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: theme.pageBg }} />
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: theme.buttonBg }} />
+                          <span className="h-2.5 w-2.5 rounded-full" style={{ backgroundColor: theme.accent }} />
+                        </div>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={saveAppearanceSettings}
+                    className="w-full rounded-xl bg-brand-green px-4 py-2.5 text-sm font-semibold text-white hover:bg-[#489b2d]"
+                  >
+                    Save appearance
+                  </button>
+                  {appearanceSaved && (
+                    <p className="mt-2 text-center text-xs font-medium text-brand-green">Appearance saved ✅</p>
+                  )}
                 </div>
               </div>
 
               <div className="rounded-2xl border border-brand-slate/10 bg-white p-5">
                 <h2 className="mb-4 text-lg font-semibold text-brand-charcoal">Live preview</h2>
-                <div className="rounded-2xl p-5" style={{ backgroundColor: appearance.background }}>
-                  <img
-                    src={appearance.profileImage}
-                    alt="Profile preview"
-                    className="h-16 w-16 rounded-full border-2 object-cover"
-                    style={{ borderColor: appearance.accent }}
-                  />
-                  <h3 className="mt-3 text-lg font-semibold" style={{ color: appearance.accent }}>
-                    {appearance.displayName}
-                  </h3>
-                  <p className="text-sm text-brand-slate">{appearance.headline}</p>
+                <div className="mx-auto w-full max-w-[330px] rounded-[2rem] bg-[#161c20] p-2.5 shadow-2xl">
+                  <div className="relative overflow-hidden rounded-[1.6rem]" style={{ backgroundColor: activeTheme.pageBg }}>
+                    <div className="absolute left-1/2 top-2 z-10 h-1.5 w-16 -translate-x-1/2 rounded-full bg-black/30" />
+                    <div className="h-[620px] overflow-y-auto scrollbar-hide">
+                      <img src={appearance.heroImage} alt="Hero" className="h-36 w-full object-cover" />
+                      <div className="-mt-9 px-4 pb-5">
+                        <div className="inline-flex rounded-full border-4" style={{ borderColor: activeTheme.pageBg }}>
+                          <img
+                            src={appearance.profileImage}
+                            alt="Profile preview"
+                            className="h-16 w-16 rounded-full object-cover"
+                          />
+                        </div>
+
+                        <div className="mt-3 rounded-2xl p-4" style={{ backgroundColor: activeTheme.cardBg }}>
+                          <h3
+                            className="text-lg font-semibold"
+                            style={{ color: appearance.nameColor, fontFamily: appearance.nameFont }}
+                          >
+                            {appearance.displayName}
+                          </h3>
+                          <p className="mt-1 text-sm" style={{ color: activeTheme.mutedText }}>
+                            {appearance.shortBio}
+                          </p>
+
+                          <div className="mt-4 space-y-2">
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
+                              Links
+                            </p>
+                            {links.filter((link) => link.active).map((link) => (
+                              <button
+                                key={link.id}
+                                type="button"
+                                className="w-full rounded-xl px-3 py-2 text-sm font-semibold text-white"
+                                style={{ backgroundColor: activeTheme.buttonBg }}
+                              >
+                                {link.title}
+                              </button>
+                            ))}
+
+                            <div className="rounded-xl border p-3" style={{ borderColor: `${activeTheme.accent}66` }}>
+                              <p className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
+                                Connect with me
+                              </p>
+                              <form className="mt-2 space-y-2" onSubmit={submitPublicContact}>
+                                <input
+                                  placeholder="Your name"
+                                  value={publicContactForm.name}
+                                  onChange={(e) => setPublicContactForm((prev) => ({ ...prev, name: e.target.value }))}
+                                  className="h-9 w-full rounded-lg border px-2 text-xs"
+                                  style={{ borderColor: `${activeTheme.accent}55` }}
+                                />
+                                <input
+                                  placeholder="Email"
+                                  type="email"
+                                  value={publicContactForm.email}
+                                  onChange={(e) => setPublicContactForm((prev) => ({ ...prev, email: e.target.value }))}
+                                  className="h-9 w-full rounded-lg border px-2 text-xs"
+                                  style={{ borderColor: `${activeTheme.accent}55` }}
+                                />
+                                <input
+                                  placeholder="Phone number"
+                                  value={publicContactForm.phone}
+                                  onChange={(e) => setPublicContactForm((prev) => ({ ...prev, phone: e.target.value }))}
+                                  className="h-9 w-full rounded-lg border px-2 text-xs"
+                                  style={{ borderColor: `${activeTheme.accent}55` }}
+                                />
+                                <button
+                                  type="submit"
+                                  className="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white"
+                                  style={{ backgroundColor: activeTheme.buttonBg }}
+                                >
+                                  Send details
+                                </button>
+                                {connectSaved && (
+                                  <p className="text-center text-[11px] font-medium" style={{ color: activeTheme.textColor }}>
+                                    Saved to Contacts ✅
+                                  </p>
+                                )}
+                              </form>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
@@ -460,11 +746,13 @@ const Dashboard = () => {
           {activeTab === 'contacts' && (
             <div className="space-y-3 rounded-2xl border border-brand-slate/10 bg-white p-5">
               <h2 className="text-lg font-semibold text-brand-charcoal">Recent contacts</h2>
-              {initialContacts.map((contact) => (
+              {contactLeads.map((contact) => (
                 <div key={contact.id} className="flex items-center justify-between rounded-xl border border-brand-slate/10 p-4">
                   <div>
                     <p className="font-medium text-brand-charcoal">{contact.name}</p>
                     <p className="text-sm text-brand-slate/70">{contact.source}</p>
+                    {contact.email && <p className="text-xs text-brand-slate/60">{contact.email}</p>}
+                    {contact.phone && <p className="text-xs text-brand-slate/60">{contact.phone}</p>}
                   </div>
                   <span className="text-sm text-brand-slate/60">{contact.date}</span>
                 </div>

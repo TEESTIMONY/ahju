@@ -10,7 +10,7 @@ const Landing = () => {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 0.35, ease: 'easeOut' }}
-      className="min-h-screen bg-site text-black"
+      className="min-h-screen bg-site text-brand-charcoal"
     >
       <Header />
       <HeroSection />
