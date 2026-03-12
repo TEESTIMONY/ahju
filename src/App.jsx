@@ -5,9 +5,7 @@ import { ThemeProvider, useTheme } from './context/ThemeContext'
 import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Auth from './pages/Auth'
-
-// Placeholder for public profile
-const ProfilePublic = () => <div className="min-h-screen bg-dark-900 p-8 flex items-center justify-center">Public Profile Page - Coming Soon</div>
+import PublicProfile from './pages/PublicProfile'
 
 const AppRoutes = () => {
   const { theme, toggleDarkMode } = useTheme()
@@ -30,7 +28,7 @@ const AppRoutes = () => {
         <Route path="/dashboad" element={<Dashboard />} />
         <Route path="/login" element={<Auth />} />
         <Route path="/register" element={<Auth />} />
-        <Route path="/u/:username" element={<ProfilePublic />} />
+        <Route path="/r/" element={<PublicProfile />} />
       </Routes>
     </div>
   )

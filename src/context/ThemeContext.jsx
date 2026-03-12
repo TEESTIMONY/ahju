@@ -16,7 +16,7 @@ export const ThemeProvider = ({ children }) => {
     const savedTheme = localStorage.getItem('linkhub-theme')
     return savedTheme ? JSON.parse(savedTheme) : {
       background: 'gradient', // solid, gradient, or image
-      accentColor: '#54b435',
+      accentColor: '#348539',
       fontStyle: 'Poppins',
       buttonStyle: 'filled',
       isDark: true

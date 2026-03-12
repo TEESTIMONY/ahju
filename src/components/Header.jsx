@@ -6,6 +6,11 @@ import { ArrowRight } from 'lucide-react'
 const logoImage = new URL('../../logo.jpg', import.meta.url).href
 
 const Header = ({ isLoggedIn = false }) => {
+  const hasSession =
+    isLoggedIn ||
+    Boolean(localStorage.getItem('ahju_access_token')) ||
+    Boolean(localStorage.getItem('ahju_refresh_token'))
+
   return (
     <motion.header
       initial={{ opacity: 0, y: -20 }}
@@ -22,15 +27,15 @@ const Header = ({ isLoggedIn = false }) => {
         </motion.div>
 
         <div className="flex items-center gap-3">
-          {!isLoggedIn && (
+          {!hasSession && (
             <>
-              <Link to="/login" className="hidden text-sm font-medium text-brand-slate/80 transition-colors hover:text-brand-green sm:inline">
+              <Link to={hasSession ? '/dashboard' : '/login'} className="hidden text-sm font-medium text-brand-slate/80 transition-colors hover:text-brand-green sm:inline">
                 Sign in
               </Link>
               <motion.div whileHover={{ y: -2, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
                 <Link
-                  to="/register"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#2f3b40] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#253035]"
+                  to={hasSession ? '/dashboard' : '/register'}
+                  className="inline-flex items-center gap-2 rounded-full bg-[#28241E] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#253035]"
                 >
                   Get started
                   <ArrowRight className="h-4 w-4" />

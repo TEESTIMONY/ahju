@@ -244,7 +244,7 @@ const HeroSection = () => {
               <motion.div whileHover={shouldReduceMotion ? {} : { y: -2, scale: 1.02 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
                 <Link
                   to="/register"
-                  className="inline-flex items-center gap-2 rounded-full bg-[#2f3b40] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#253035]"
+                  className="inline-flex items-center gap-2 rounded-full bg-[#28241E] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#253035]"
                 >
                   Get Your AHJU Card <ArrowRight className="h-4 w-4" />
                 </Link>
@@ -358,7 +358,7 @@ const HeroSection = () => {
               <motion.div whileHover={shouldReduceMotion ? {} : { y: -2 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
                 <Link
                   to="/u/sample"
-                  className="mt-6 inline-flex rounded-full bg-[#2f3b40] px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[#253035]"
+                  className="mt-6 inline-flex rounded-full bg-[#28241E] px-5 py-2 text-sm font-medium text-white shadow-sm transition hover:bg-[#253035]"
                 >
                   View Sample Profile Here
                 </Link>
@@ -405,7 +405,7 @@ const HeroSection = () => {
           <motion.div whileHover={shouldReduceMotion ? {} : { y: -2 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
             <Link
               to="/register"
-              className="inline-flex items-center gap-2 rounded-full bg-[#2f3b40] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#253035]"
+              className="inline-flex items-center gap-2 rounded-full bg-[#28241E] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#253035]"
             >
               Get your AHJU NOW <ArrowRight className="h-4 w-4" />
             </Link>

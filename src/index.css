@@ -1,21 +1,21 @@
 @import 'tailwindcss';
 
 @theme {
-  --color-primary: #54b435;
-  --color-secondary: #2f3b40;
-  --color-brand-green: #54b435;
-  --color-brand-slate: #2f3b40;
+  --color-primary: #348539;
+  --color-secondary: #28241E;
+  --color-brand-green: #348539;
+  --color-brand-slate: #28241E;
   --color-brand-charcoal: #222222;
   --color-dark-900: #222222;
-  --color-dark-800: #2f3b40;
+  --color-dark-800: #28241E;
 }
 
 :root {
   --site-bg: #f6f8f3;
   --text-main: #222222;
-  --text-muted: #2f3b40;
-  --brand-green: #54b435;
-  --brand-slate: #2f3b40;
+  --text-muted: #28241E;
+  --brand-green: #348539;
+  --brand-slate: #28241E;
   --brand-charcoal: #222222;
 }
 
@@ -146,11 +146,11 @@ body {
 }
 
 /* Swap primary button tones in dark mode:
-   #2f3b40 <-> #54b435 */
-.dark button.bg-\[\#2f3b40\],
-.dark a.bg-\[\#2f3b40\],
-.dark [role='button'].bg-\[\#2f3b40\] {
-  background-color: #54b435 !important;
+   #28241E <-> #348539 */
+.dark button.bg-\[\#28241E\],
+.dark a.bg-\[\#28241E\],
+.dark [role='button'].bg-\[\#28241E\] {
+  background-color: #348539 !important;
 }
 
 .dark button.hover\:bg-\[\#253035\]:hover,
@@ -162,7 +162,7 @@ body {
 .dark button.bg-brand-green,
 .dark a.bg-brand-green,
 .dark [role='button'].bg-brand-green {
-  background-color: #2f3b40 !important;
+  background-color: #28241E !important;
 }
 
 .dark button.hover\:bg-\[\#489b2d\]:hover,
@@ -178,7 +178,7 @@ body {
 .dark .dashboard-page button.bg-brand-green,
 .dark .dashboard-page a.bg-brand-green,
 .dark .dashboard-page [role='button'].bg-brand-green {
-  background-color: #54b435 !important;
+  background-color: #348539 !important;
 }
 
 .dark .dashboard-page button.hover\:bg-\[\#489b2d\]:hover,

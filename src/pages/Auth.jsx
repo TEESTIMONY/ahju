@@ -1,11 +1,18 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { useLocation } from 'react-router-dom'
+import { Navigate, useLocation } from 'react-router-dom'
 import AuthForms from '../components/AuthForms'
 
 const Auth = () => {
   const { pathname } = useLocation()
   const mode = pathname === '/register' ? 'register' : 'login'
+  const hasSession =
+    Boolean(localStorage.getItem('ahju_access_token')) ||
+    Boolean(localStorage.getItem('ahju_refresh_token'))
+
+  if (hasSession) {
+    return <Navigate to="/dashboard" replace />
+  }
 
   return (
     <div className="min-h-screen bg-site relative overflow-hidden auth-grid-bg">
