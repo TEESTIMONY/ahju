@@ -150,7 +150,6 @@ const AuthForms = ({ mode = 'login' }) => {
                   ? 'Continue securely with Google to access your profile, links, and analytics dashboard.'
                   : 'Set up your professional digital identity in minutes and manage everything from one dashboard.'}
             </p>
-
             {!showUsernameStep ? (
               <motion.button
                 whileHover={{ y: -2, scale: 1.01 }}

@@ -192,6 +192,10 @@ const Dashboard = () => {
   const [appearanceSaving, setAppearanceSaving] = useState(false)
   const [appearanceError, setAppearanceError] = useState('')
   const [appearanceSaved, setAppearanceSaved] = useState(false)
+  const [appearanceFileNames, setAppearanceFileNames] = useState({
+    profileImage: '',
+    heroImage: '',
+  })
   const [publicContactForm, setPublicContactForm] = useState({ name: '', email: '', phone: '' })
   const [connectSaved, setConnectSaved] = useState(false)
   const [isUsernameModalOpen, setIsUsernameModalOpen] = useState(false)
@@ -220,6 +224,21 @@ const Dashboard = () => {
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return ''
     return date.toLocaleString()
+  }
+
+  const getImageFileName = (value = '', fallback = 'No file selected') => {
+    const trimmed = (value || '').trim()
+    if (!trimmed) return fallback
+
+    try {
+      if (trimmed.startsWith('blob:')) return 'Local preview image'
+      const parsed = new URL(trimmed)
+      const rawName = parsed.pathname.split('/').filter(Boolean).pop() || ''
+      return decodeURIComponent(rawName) || fallback
+    } catch {
+      const rawName = trimmed.split('/').filter(Boolean).pop() || trimmed
+      return rawName || fallback
+    }
   }
 
   const downloadContactVCard = (contact) => {
@@ -562,6 +581,7 @@ const Dashboard = () => {
     if (!file) return
 
     const previewUrl = URL.createObjectURL(file)
+    setAppearanceFileNames((prev) => ({ ...prev, [type]: file.name }))
     setAppearance((prev) => ({ ...prev, [type]: previewUrl }))
     setAppearanceError('')
 
@@ -1062,10 +1082,10 @@ const Dashboard = () => {
               <div className="space-y-4 rounded-2xl border border-brand-slate/10 bg-white p-5">
                 <h2 className="text-lg font-semibold text-brand-charcoal">Customize profile look</h2>
                 <label className="block space-y-1">
-                  <span className="text-sm text-brand-slate/70">Profile image URL</span>
+                  <span className="text-sm text-brand-slate/70">Profile image file</span>
                   <input
-                    value={appearance.profileImage}
-                    onChange={(e) => setAppearance((prev) => ({ ...prev, profileImage: e.target.value }))}
+                    value={appearanceFileNames.profileImage || getImageFileName(appearance.profileImage, 'No profile image selected')}
+                    readOnly
                     className="h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
                   />
                   <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-brand-slate/20 px-3 py-2 text-xs font-medium text-brand-charcoal hover:bg-brand-slate/5">
@@ -1079,10 +1099,10 @@ const Dashboard = () => {
                   </label>
                 </label>
                 <label className="block space-y-1">
-                  <span className="text-sm text-brand-slate/70">Hero image URL</span>
+                  <span className="text-sm text-brand-slate/70">Hero image file</span>
                   <input
-                    value={appearance.heroImage}
-                    onChange={(e) => setAppearance((prev) => ({ ...prev, heroImage: e.target.value }))}
+                    value={appearanceFileNames.heroImage || getImageFileName(appearance.heroImage, 'No hero image selected')}
+                    readOnly
                     className="h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
                   />
                   <label className="mt-2 inline-flex cursor-pointer items-center gap-2 rounded-lg border border-brand-slate/20 px-3 py-2 text-xs font-medium text-brand-charcoal hover:bg-brand-slate/5">
