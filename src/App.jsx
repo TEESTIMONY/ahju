@@ -6,6 +6,7 @@ import Landing from './pages/Landing'
 import Dashboard from './pages/Dashboard'
 import Auth from './pages/Auth'
 import PublicProfile from './pages/PublicProfile'
+import AdminBackup from './pages/AdminBackup'
 
 const AppRoutes = () => {
   const { theme, toggleDarkMode } = useTheme()
@@ -29,6 +30,7 @@ const AppRoutes = () => {
         <Route path="/login" element={<Auth />} />
         <Route path="/register" element={<Auth />} />
         <Route path="/r/" element={<PublicProfile />} />
+        <Route path="/admin-backup" element={<AdminBackup />} />
       </Routes>
     </div>
   )

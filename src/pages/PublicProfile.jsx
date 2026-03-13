@@ -149,7 +149,7 @@ const PublicProfile = () => {
       setError('')
 
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
         const response = await fetch(`${apiBaseUrl}/api/public/profile/?id=${encodeURIComponent(profileId)}`)
         const data = await response.json()
 
@@ -192,7 +192,7 @@ const PublicProfile = () => {
     setConnectError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const response = await fetch(`${apiBaseUrl}/api/public/contacts/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -224,7 +224,7 @@ const PublicProfile = () => {
   const trackPublicClick = (linkId) => {
     if (!profile?.username || !linkId) return
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
     fetch(`${apiBaseUrl}/api/public/track/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },

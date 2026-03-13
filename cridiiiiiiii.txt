@@ -1,0 +1,1 @@
+postgresql://ahju_temporary_db_user:kQrYRRUvHRMV8K3mfb6addy54EFkaB9e@dpg-d6ps2s2a214c73ebem7g-a.oregon-postgres.render.com/ahju_temporary_db

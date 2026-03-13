@@ -44,6 +44,7 @@ import {
   User2,
   X,
   Youtube,
+  Pencil,
 } from 'lucide-react'
 
 const TABS = [
@@ -193,6 +194,10 @@ const Dashboard = () => {
   const [appearanceSaved, setAppearanceSaved] = useState(false)
   const [publicContactForm, setPublicContactForm] = useState({ name: '', email: '', phone: '' })
   const [connectSaved, setConnectSaved] = useState(false)
+  const [isUsernameModalOpen, setIsUsernameModalOpen] = useState(false)
+  const [usernameDraft, setUsernameDraft] = useState(username)
+  const [usernameSaving, setUsernameSaving] = useState(false)
+  const [usernameError, setUsernameError] = useState('')
   const [appearance, setAppearance] = useState({
     selectedTheme: 'minimal-light',
     profileImage: '',
@@ -295,7 +300,7 @@ const Dashboard = () => {
   const getValidAccessToken = async () => {
     const accessToken = localStorage.getItem('ahju_access_token')
     const refreshToken = localStorage.getItem('ahju_refresh_token')
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
 
     if (!accessToken && !refreshToken) return null
     if (accessToken) return accessToken
@@ -317,7 +322,7 @@ const Dashboard = () => {
   }
 
   const authorizedFetch = async (url, options = {}) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
     const token = await getValidAccessToken()
     if (!token) throw new Error('Session expired. Please log in again.')
 
@@ -386,7 +391,7 @@ const Dashboard = () => {
       return
     }
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
 
     const loadAnalytics = async () => {
       setAnalyticsLoading(true)
@@ -476,7 +481,7 @@ const Dashboard = () => {
     setLinksSaving(true)
     setLinksError('')
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/`, {
         method: 'POST',
         headers: {
@@ -561,7 +566,7 @@ const Dashboard = () => {
     setAppearanceError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const formData = new FormData()
       formData.append('image', file)
 
@@ -616,7 +621,7 @@ const Dashboard = () => {
     setAppearanceSaved(false)
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const payload = {
         display_name: appearance.displayName,
         short_bio: appearance.shortBio,
@@ -665,6 +670,52 @@ const Dashboard = () => {
     localStorage.removeItem('ahju_refresh_token')
     localStorage.removeItem('ahju_user')
     navigate('/login')
+  }
+
+  const openUsernameModal = () => {
+    setUsernameDraft(username)
+    setUsernameError('')
+    setIsUsernameModalOpen(true)
+  }
+
+  const closeUsernameModal = () => {
+    if (usernameSaving) return
+    setIsUsernameModalOpen(false)
+    setUsernameError('')
+  }
+
+  const saveUsername = async () => {
+    const trimmed = usernameDraft.trim()
+    if (!/^[a-zA-Z0-9_]{3,30}$/.test(trimmed)) {
+      setUsernameError('Username must be 3-30 chars and use letters, numbers, or underscores only.')
+      return
+    }
+
+    setUsernameSaving(true)
+    setUsernameError('')
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/set-username/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username: trimmed }),
+      })
+
+      const data = await response.json()
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not update username')
+      }
+
+      localStorage.setItem('ahju_user', JSON.stringify(data.user))
+      setIsUsernameModalOpen(false)
+    } catch (err) {
+      setUsernameError(err.message || 'Could not update username')
+    } finally {
+      setUsernameSaving(false)
+    }
   }
 
   return (
@@ -727,10 +778,16 @@ const Dashboard = () => {
 
           <div className="mt-8 space-y-2 rounded-xl border border-brand-slate/10 bg-white p-3 lg:mt-auto">
             <p className="text-xs uppercase tracking-[0.12em] text-brand-slate/55">Account</p>
-            <div className="flex items-center gap-2 text-sm text-brand-charcoal">
+            <button
+              type="button"
+              onClick={openUsernameModal}
+              className="flex items-center gap-2 text-sm text-brand-charcoal hover:text-brand-green"
+              title="Edit username"
+            >
               <User2 className="h-4 w-4 text-brand-slate/70" />
               @{username}
-            </div>
+              <Pencil className="h-3.5 w-3.5" />
+            </button>
             <p className="text-xs text-brand-slate/65 pl-6">{userEmail}</p>
             <button
               type="button"
@@ -769,7 +826,17 @@ const Dashboard = () => {
             <div className="space-y-6">
               <div className="grid gap-3 md:grid-cols-2">
                 <div className="rounded-2xl border border-brand-slate/10 bg-white p-4 md:p-5">
-                  <p className="text-sm text-brand-slate/70">Username</p>
+                  <div className="flex items-center justify-between gap-2">
+                    <p className="text-sm text-brand-slate/70">Username</p>
+                    <button
+                      type="button"
+                      onClick={openUsernameModal}
+                      className="inline-flex items-center gap-1 rounded-lg border border-brand-slate/20 px-2 py-1 text-xs font-medium text-brand-slate hover:bg-brand-slate/5"
+                    >
+                      <Pencil className="h-3.5 w-3.5" />
+                      Edit
+                    </button>
+                  </div>
                   <p className="mt-1 text-2xl font-bold text-brand-charcoal">@{username}</p>
                 </div>
                 <div className="rounded-2xl border border-brand-slate/10 bg-white p-4 md:p-5">
@@ -1321,6 +1388,45 @@ const Dashboard = () => {
           )}
         </main>
       </div>
+
+      {isUsernameModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button className="absolute inset-0 bg-black/40" onClick={closeUsernameModal} aria-label="Close" />
+          <div className="relative z-10 w-full max-w-md rounded-2xl border border-brand-slate/10 bg-white p-5 shadow-2xl">
+            <h3 className="text-lg font-semibold text-brand-charcoal">Edit username</h3>
+            <p className="mt-1 text-sm text-brand-slate/70">This updates your public profile link and dashboard username.</p>
+
+            <div className="mt-4">
+              <label className="text-xs font-medium text-brand-slate/70">Username</label>
+              <input
+                value={usernameDraft}
+                onChange={(e) => setUsernameDraft(e.target.value)}
+                placeholder="e.g. teestimony"
+                className="mt-1 h-11 w-full rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+              />
+              {usernameError && <p className="mt-2 text-sm text-red-600">{usernameError}</p>}
+            </div>
+
+            <div className="mt-5 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={closeUsernameModal}
+                className="rounded-xl border border-brand-slate/20 px-3 py-2 text-sm font-medium text-brand-slate hover:bg-brand-slate/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveUsername}
+                disabled={usernameSaving}
+                className="rounded-xl bg-brand-green px-4 py-2 text-sm font-semibold text-white hover:bg-[#489b2d] disabled:opacity-70"
+              >
+                {usernameSaving ? 'Saving...' : 'Save username'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
