@@ -503,59 +503,6 @@ const Dashboard = () => {
     return `https://${trimmed}`
   }
 
-  const resolveUrl = (base, relative) => {
-    try {
-      return new URL(relative, base).href
-    } catch {
-      return null
-    }
-  }
-
-  const scrapeImageUrlsFromPage = async (pageUrl) => {
-    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(pageUrl)}`
-    const response = await fetch(proxyUrl)
-    if (!response.ok) {
-      throw new Error(`Could not fetch page content (HTTP ${response.status})`)
-    }
-
-    const data = await response.json()
-    const html = data?.contents || ''
-    if (!html) return []
-
-    const parser = new DOMParser()
-    const doc = parser.parseFromString(html, 'text/html')
-    const imageSet = new Set()
-
-    doc.querySelectorAll('img').forEach((img) => {
-      const src = img.getAttribute('src') || img.getAttribute('data-src') || ''
-      const resolved = resolveUrl(pageUrl, src)
-      if (resolved) imageSet.add(resolved)
-    })
-
-    doc.querySelectorAll('*').forEach((el) => {
-      const style = el.getAttribute('style') || ''
-      if (!style.includes('url(')) return
-      const matches = style.match(/url\(["']?(.*?)["']?\)/gi) || []
-      matches.forEach((m) => {
-        const path = m.match(/url\(["']?(.*?)["']?\)/)?.[1]
-        const resolved = resolveUrl(pageUrl, path)
-        if (resolved) imageSet.add(resolved)
-      })
-    })
-
-    const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content')
-    if (ogImage) {
-      const resolved = resolveUrl(pageUrl, ogImage)
-      if (resolved) imageSet.add(resolved)
-    }
-
-    return Array.from(imageSet).filter((src) => {
-      const lower = src.toLowerCase()
-      if (lower.includes('1x1') || lower.includes('pixel') || lower.startsWith('data:image')) return false
-      return /\.(jpe?g|png|gif|webp|svg|bmp)(\?|$)/i.test(lower)
-    })
-  }
-
   function getSocialMeta(title = '', url = '') {
     const normalized = `${title} ${url}`.toLowerCase()
 
@@ -1023,42 +970,31 @@ const Dashboard = () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const normalizedLink = normalizeLinkUrl(socialLink)
+      const isDirectImageLink = /\.(jpe?g|png|gif|webp|svg|bmp)(\?.*)?$/i.test(normalizedLink)
 
-      // 1) Try importing multiple images from the page URL (best effort)
-      const scrapedImages = await scrapeImageUrlsFromPage(normalizedLink)
-      const imagesToImport = scrapedImages.slice(0, 12)
+      if (isDirectImageLink) {
+        const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            kind: 'upload',
+            title: socialFeedTitle.trim() || 'Imported image',
+            image_url: normalizedLink,
+            source_url: normalizedLink,
+            is_active: true,
+          }),
+        })
 
-      if (imagesToImport.length > 0) {
-        const createdItems = []
-        for (let i = 0; i < imagesToImport.length; i += 1) {
-          const imageUrl = imagesToImport[i]
-          const createRes = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              kind: 'upload',
-              title: `${socialFeedTitle.trim() || 'Imported image'} ${i + 1}`,
-              image_url: imageUrl,
-              source_url: normalizedLink,
-              is_active: true,
-            }),
-          })
-
-          const createData = await createRes.json()
-          if (createRes.ok) {
-            createdItems.push(createData)
-          }
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.detail || 'Could not import image link')
         }
 
-        if (!createdItems.length) {
-          throw new Error('Images were found but could not be saved to your portfolio.')
-        }
-
-        setPortfolioItems((prev) => [...createdItems, ...prev])
+        setPortfolioItems((prev) => [data, ...prev])
       } else {
-        // 2) Fallback: create a social embed item (works well for post links)
+        // Create a social embed item (avoids third-party CORS proxy failures)
         const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
           method: 'POST',
           headers: {

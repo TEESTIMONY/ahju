@@ -485,7 +485,7 @@ const PublicProfile = () => {
                               target="_blank"
                               rel="noreferrer"
                               onClick={() => trackPublicClick(link.id)}
-                              className="inline-flex w-full items-center gap-2 rounded-xl px-3 py-2.5 text-sm font-semibold text-white"
+                              className="inline-flex w-full items-center justify-center gap-2 rounded-xl px-3 py-2.5 text-center text-sm font-semibold text-white"
                               style={{ backgroundColor: activeTheme.buttonBg }}
                             >
                               <Globe className="h-4 w-4" />
