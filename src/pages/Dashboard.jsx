@@ -45,6 +45,7 @@ import {
   X,
   Youtube,
   Pencil,
+  MoreVertical,
 } from 'lucide-react'
 import {
   FaDiscord,
@@ -245,6 +246,7 @@ const CONTACT_TAG_OPTIONS = [
   { value: 'closed', label: 'Closed' },
   { value: 'lost', label: 'Lost' },
 ]
+const CONTACT_TAG_CYCLE = ['new', 'follow_up', 'contacted', 'closed', 'lost']
 
 let refreshPromise = null
 
@@ -287,6 +289,8 @@ const Dashboard = () => {
   const [contactFilterTag, setContactFilterTag] = useState('all')
   const [contactActionId, setContactActionId] = useState(null)
   const [contactNoteDrafts, setContactNoteDrafts] = useState({})
+  const [expandedContactNotes, setExpandedContactNotes] = useState({})
+  const [openContactMenuId, setOpenContactMenuId] = useState(null)
   const [portfolioItems, setPortfolioItems] = useState([])
   const [portfolioLoading, setPortfolioLoading] = useState(true)
   const [portfolioError, setPortfolioError] = useState('')
@@ -299,6 +303,12 @@ const Dashboard = () => {
   const [lookbookGallery, setLookbookGallery] = useState(lookbookItems)
   const [socialLink, setSocialLink] = useState('')
   const [socialLoading, setSocialLoading] = useState(false)
+  const [importPreviewOpen, setImportPreviewOpen] = useState(false)
+  const [importPreviewImages, setImportPreviewImages] = useState([])
+  const [selectedImportImages, setSelectedImportImages] = useState([])
+  const [importSourceUrl, setImportSourceUrl] = useState('')
+  const [importMaxImages, setImportMaxImages] = useState(10)
+  const [importSaving, setImportSaving] = useState(false)
   const [appearanceSaving, setAppearanceSaving] = useState(false)
   const [appearanceError, setAppearanceError] = useState('')
   const [appearanceSaved, setAppearanceSaved] = useState(false)
@@ -352,6 +362,21 @@ const Dashboard = () => {
 
   const getContactTagLabel = (tagValue = '') =>
     CONTACT_TAG_OPTIONS.find((option) => option.value === tagValue)?.label || 'New'
+
+  const getNextContactTag = (currentTag = 'new') => {
+    const currentIndex = CONTACT_TAG_CYCLE.indexOf(currentTag)
+    if (currentIndex === -1) return 'new'
+    return CONTACT_TAG_CYCLE[(currentIndex + 1) % CONTACT_TAG_CYCLE.length]
+  }
+
+  const getContactTagPillClasses = (tagValue = 'new') => {
+    if (tagValue === 'new') return 'bg-blue-100 text-blue-700'
+    if (tagValue === 'follow_up') return 'bg-amber-100 text-amber-700'
+    if (tagValue === 'lost') return 'bg-slate-200 text-slate-700'
+    if (tagValue === 'closed') return 'bg-emerald-100 text-emerald-700'
+    if (tagValue === 'contacted') return 'bg-violet-100 text-violet-700'
+    return 'bg-brand-green/10 text-brand-green'
+  }
 
   const mapApiContactToUi = (lead) => ({
     id: lead.id,
@@ -931,14 +956,20 @@ const Dashboard = () => {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
 
+    if (files.length > 10) {
+      setPortfolioError('You can upload a maximum of 10 images at a time.')
+    }
+
+    const filesToUpload = files.slice(0, 10)
+
     setPortfolioUploadSaving(true)
-    setPortfolioError('')
+    if (files.length <= 10) setPortfolioError('')
 
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const created = []
 
-      for (const file of files) {
+      for (const file of filesToUpload) {
         const formData = new FormData()
         formData.append('image', file)
 
@@ -970,58 +1001,105 @@ const Dashboard = () => {
     try {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const normalizedLink = normalizeLinkUrl(socialLink)
-      const isDirectImageLink = /\.(jpe?g|png|gif|webp|svg|bmp)(\?.*)?$/i.test(normalizedLink)
+      const maxImages = 10
 
-      if (isDirectImageLink) {
-        const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            kind: 'upload',
-            title: socialFeedTitle.trim() || 'Imported image',
-            image_url: normalizedLink,
-            source_url: normalizedLink,
-            is_active: true,
-          }),
-        })
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/import-images/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source_url: normalizedLink,
+          max_images: maxImages,
+          preview_only: true,
+        }),
+      })
 
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Could not import image link')
-        }
-
-        setPortfolioItems((prev) => [data, ...prev])
-      } else {
-        // Create a social embed item (avoids third-party CORS proxy failures)
-        const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            kind: 'social',
-            title: socialFeedTitle.trim() || 'Social post',
-            source_url: normalizedLink,
-            is_active: true,
-          }),
-        })
-
-        const data = await response.json()
-        if (!response.ok) {
-          throw new Error(data?.detail || 'Could not import social link')
-        }
-
-        setPortfolioItems((prev) => [data, ...prev])
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not import images from this link')
       }
 
+      const previewImages = Array.isArray(data?.images) ? data.images : []
+      if (!previewImages.length) {
+        throw new Error('No images found from that URL. Try another page from the same site or one that shows images without login.')
+      }
+
+      setImportPreviewImages(previewImages)
+      setSelectedImportImages(previewImages.slice(0, maxImages))
+      setImportSourceUrl(normalizedLink)
+      setImportMaxImages(maxImages)
+      setImportPreviewOpen(true)
+    } catch (err) {
+      setPortfolioError(err.message || 'Could not import images from this link')
+    } finally {
+      setSocialLoading(false)
+    }
+  }
+
+  const toggleImportImageSelection = (imageUrl) => {
+    setSelectedImportImages((prev) => {
+      if (prev.includes(imageUrl)) {
+        return prev.filter((url) => url !== imageUrl)
+      }
+      if (prev.length >= importMaxImages) {
+        setPortfolioError(`You can select up to ${importMaxImages} images for this link.`)
+        return prev
+      }
+      setPortfolioError('')
+      return [...prev, imageUrl]
+    })
+  }
+
+  const selectAllImportImages = () => {
+    setSelectedImportImages(importPreviewImages.slice(0, importMaxImages))
+    setPortfolioError('')
+  }
+
+  const deselectAllImportImages = () => {
+    setSelectedImportImages([])
+    setPortfolioError('')
+  }
+
+  const confirmImportSelection = async () => {
+    if (!importSourceUrl || !selectedImportImages.length) {
+      setPortfolioError('Select at least one image to import.')
+      return
+    }
+
+    setImportSaving(true)
+    setPortfolioError('')
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/import-images/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          source_url: importSourceUrl,
+          max_images: importMaxImages,
+          selected_images: selectedImportImages,
+        }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not import selected images')
+      }
+
+      const importedItems = Array.isArray(data?.items) ? data.items : []
+      setPortfolioItems((prev) => [...importedItems, ...prev])
+      setImportPreviewOpen(false)
+      setImportPreviewImages([])
+      setSelectedImportImages([])
+      setImportSourceUrl('')
       setSocialLink('')
       setSocialFeedTitle('')
     } catch (err) {
-      setPortfolioError(err.message || 'Could not import social link')
+      setPortfolioError(err.message || 'Could not import selected images')
     } finally {
-      setSocialLoading(false)
+      setImportSaving(false)
     }
   }
 
@@ -1350,7 +1428,7 @@ const Dashboard = () => {
           />
         )}
 
-        <aside className={`fixed inset-y-0 left-0 z-40 flex w-[86vw] max-w-[320px] flex-col overflow-y-auto rounded-r-2xl border-r border-brand-slate/10 bg-white p-4 shadow-2xl transition-transform duration-300 lg:static lg:min-h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-none lg:p-5 lg:shadow-none ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
+        <aside className={`fixed inset-y-0 left-0 z-40 flex w-[86vw] max-w-[320px] flex-col overflow-y-auto rounded-r-2xl border-r border-brand-slate/10 bg-white p-4 shadow-2xl transition-transform duration-300 lg:sticky lg:top-0 lg:h-screen lg:w-auto lg:max-w-none lg:translate-x-0 lg:rounded-none lg:p-5 lg:shadow-none ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'}`}>
           <div className="mb-6 flex items-center gap-3 rounded-xl border border-brand-slate/10 bg-brand-green/5 p-3">
             <button
               type="button"
@@ -2156,7 +2234,80 @@ const Dashboard = () => {
               )}
 
               {!contactsLoading && filteredContactLeads.length > 0 && (
-                <div className="overflow-x-auto rounded-xl border border-brand-slate/10">
+                <div className="space-y-3 md:hidden">
+                  {filteredContactLeads.map((contact) => {
+                    const isBusy = contactActionId === contact.id
+                    const noteValue = contactNoteDrafts[contact.id] ?? ''
+
+                    return (
+                      <article key={contact.id} className="rounded-xl border border-brand-slate/10 bg-brand-slate/[0.02] p-3">
+                        <div className="flex items-start justify-between gap-2">
+                          <div className="min-w-0">
+                            <p className="truncate font-semibold text-brand-charcoal">{contact.name}</p>
+                            <p className="truncate text-xs text-brand-slate/65">{contact.email || 'No email'}</p>
+                            <p className="truncate text-xs text-brand-slate/65">{contact.phone || 'No phone'}</p>
+                          </div>
+                          <span className="rounded-full bg-brand-green/10 px-2 py-1 text-[11px] font-semibold text-brand-green">
+                            {getContactTagLabel(contact.tag)}
+                          </span>
+                        </div>
+
+                        <div className="mt-3 grid gap-2">
+                          <label className="space-y-1">
+                            <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-brand-slate/70">Tag</span>
+                            <select
+                              value={contact.tag || 'new'}
+                              onChange={(e) => updateContactTag(contact.id, e.target.value)}
+                              disabled={isBusy}
+                              className="h-9 w-full rounded-lg border border-brand-slate/20 bg-white px-2.5 text-xs text-brand-charcoal outline-none focus:border-brand-green/60 disabled:opacity-60"
+                            >
+                              {CONTACT_TAG_OPTIONS.map((option) => (
+                                <option key={option.value} value={option.value}>
+                                  {option.label}
+                                </option>
+                              ))}
+                            </select>
+                          </label>
+
+                          <label className="space-y-1">
+                            <span className="text-[11px] font-medium uppercase tracking-[0.06em] text-brand-slate/70">Note</span>
+                            <textarea
+                              value={noteValue}
+                              onChange={(e) =>
+                                setContactNoteDrafts((prev) => ({
+                                  ...prev,
+                                  [contact.id]: e.target.value,
+                                }))
+                              }
+                              onBlur={() => saveContactNote(contact.id)}
+                              rows={3}
+                              placeholder="Add note..."
+                              className="w-full rounded-lg border border-brand-slate/20 px-2.5 py-2 text-xs outline-none focus:border-brand-green/60"
+                            />
+                          </label>
+
+                          <p className="text-[11px] text-brand-slate/70">{contact.date || '-'}</p>
+                        </div>
+
+                        <div className="mt-3 flex items-center justify-end">
+                          <button
+                            type="button"
+                            onClick={() => deleteContactLead(contact.id)}
+                            disabled={isBusy}
+                            className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                            Delete
+                          </button>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+              )}
+
+              {!contactsLoading && filteredContactLeads.length > 0 && (
+                <div className="hidden overflow-x-auto rounded-xl border border-brand-slate/10 md:block">
                   <table className="min-w-[900px] w-full text-left text-sm">
                     <thead className="bg-brand-slate/5 text-xs uppercase tracking-[0.08em] text-brand-slate/70">
                       <tr>
@@ -2231,10 +2382,10 @@ const Dashboard = () => {
 
           {activeTab === 'lookbook' && (
             <div className="space-y-5">
-              <div className="grid gap-3 rounded-2xl border border-brand-slate/10 bg-white p-4 md:grid-cols-2">
+              <div className="grid gap-3 rounded-2xl border border-brand-slate/10 bg-white p-3 sm:p-4 md:grid-cols-2">
                 <div className="rounded-xl border border-brand-slate/10 p-3">
                   <p className="text-sm font-semibold text-brand-charcoal">Upload from device</p>
-                  <p className="mt-1 text-xs text-brand-slate/70">Add one or multiple images to your portfolio.</p>
+                  <p className="mt-1 text-xs text-brand-slate/70">Add one or multiple images to your portfolio (up to 10 per upload).</p>
                   <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-brand-green px-3 py-2 text-sm font-semibold text-white hover:bg-[#489b2d]">
                     <ImagePlus className="h-4 w-4" />
                     {portfolioUploadSaving ? 'Uploading...' : 'Upload images'}
@@ -2243,23 +2394,23 @@ const Dashboard = () => {
                 </div>
 
                 <div className="rounded-xl border border-brand-slate/10 p-3">
-                  <p className="text-sm font-semibold text-brand-charcoal">Import from social link</p>
-                  <p className="mt-1 text-xs text-brand-slate/70">Paste an Instagram/X/YouTube post link to show a live preview on your profile.</p>
-                  <div className="mt-3 flex gap-2">
+                  <p className="text-sm font-semibold text-brand-charcoal">Import from shop/store or social link</p>
+                  <p className="mt-1 text-xs text-brand-slate/70">Paste your shop/store or social page URL to preview all detected images, then select up to 10 to import.</p>
+                  <div className="mt-3 flex flex-col gap-2 sm:flex-row">
                     <input
                       value={socialLink}
                       onChange={(e) => setSocialLink(e.target.value)}
-                      placeholder="https://instagram.com/p/... or https://x.com/.../status/..."
-                      className="h-10 min-w-0 flex-1 rounded-lg border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                      placeholder="https://yourstore.com/products/... or https://instagram.com/..."
+                      className="h-10 min-w-0 w-full flex-1 rounded-lg border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
                     />
                     <button
                       type="button"
                       onClick={importFromSocial}
                       disabled={socialLoading}
-                      className="inline-flex h-10 items-center gap-1 rounded-lg border border-brand-slate/20 px-3 text-sm font-medium text-brand-charcoal hover:bg-brand-slate/5"
+                      className="inline-flex h-10 w-full items-center justify-center gap-1 rounded-lg border border-brand-slate/20 px-3 text-sm font-medium text-brand-charcoal hover:bg-brand-slate/5 sm:w-auto"
                     >
                       <Link2 className="h-4 w-4" />
-                      {socialLoading ? 'Loading...' : 'Import'}
+                      {socialLoading ? 'Loading...' : 'Preview'}
                     </button>
                   </div>
                 </div>
@@ -2271,7 +2422,7 @@ const Dashboard = () => {
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+              <div className="grid grid-cols-2 gap-3 md:gap-4 lg:grid-cols-3 xl:grid-cols-4">
                 {portfolioLoading && (
                   <div className="rounded-xl border border-brand-slate/10 bg-white px-4 py-3 text-sm text-brand-slate">
                     Loading portfolio...
@@ -2325,7 +2476,7 @@ const Dashboard = () => {
 
       {isUsernameModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <button className="absolute inset-0 bg-black/40" onClick={closeUsernameModal} aria-label="Close" />
+          <button className="absolute inset-0 bg-black/40 backdrop-blur-[2px]" onClick={closeUsernameModal} aria-label="Close" />
           <div className="relative z-10 w-full max-w-md rounded-2xl border border-brand-slate/10 bg-white p-5 shadow-2xl">
             <h3 className="text-lg font-semibold text-brand-charcoal">Edit username</h3>
             <p className="mt-1 text-sm text-brand-slate/70">This updates your public profile link and dashboard username.</p>
@@ -2356,6 +2507,100 @@ const Dashboard = () => {
                 className="rounded-xl bg-brand-green px-4 py-2 text-sm font-semibold text-white hover:bg-[#489b2d] disabled:opacity-70"
               >
                 {usernameSaving ? 'Saving...' : 'Save username'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {importPreviewOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/45 backdrop-blur-[2px]"
+            onClick={() => setImportPreviewOpen(false)}
+            aria-label="Close image selection"
+          />
+
+          <div className="relative z-10 w-full max-w-5xl rounded-2xl border border-brand-slate/10 bg-white p-3 shadow-2xl sm:p-4 md:p-5">
+            <div className="mb-4 flex items-start justify-between gap-2 sm:gap-3">
+              <div>
+                <h3 className="text-lg font-semibold text-brand-charcoal">Select images to import</h3>
+                <p className="text-sm text-brand-slate/70">
+                  Pick the images you want from this link.
+                  {' '}
+                  {selectedImportImages.length}/{importMaxImages} selected.
+                </p>
+                <div className="mt-2 flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={selectAllImportImages}
+                    className="rounded-md border border-brand-slate/20 px-2.5 py-1 text-xs font-medium text-brand-charcoal hover:bg-brand-slate/5"
+                  >
+                    Select all ({Math.min(importPreviewImages.length, importMaxImages)})
+                  </button>
+                  <button
+                    type="button"
+                    onClick={deselectAllImportImages}
+                    className="rounded-md border border-brand-slate/20 px-2.5 py-1 text-xs font-medium text-brand-charcoal hover:bg-brand-slate/5"
+                  >
+                    Deselect all
+                  </button>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setImportPreviewOpen(false)}
+                className="rounded-lg border border-brand-slate/20 p-2 text-brand-slate hover:bg-brand-slate/5"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            <div className="max-h-[62vh] overflow-y-auto pr-1">
+              <div className="grid grid-cols-2 gap-3 md:grid-cols-3 lg:grid-cols-4">
+                {importPreviewImages.map((imageUrl) => {
+                  const isSelected = selectedImportImages.includes(imageUrl)
+                  return (
+                    <button
+                      key={imageUrl}
+                      type="button"
+                      onClick={() => toggleImportImageSelection(imageUrl)}
+                      className={`relative overflow-hidden rounded-xl border ${
+                        isSelected ? 'border-brand-green ring-2 ring-brand-green/30' : 'border-brand-slate/15'
+                      }`}
+                    >
+                      <img src={imageUrl} alt="Preview" className="h-36 w-full object-cover" />
+                      <span
+                        className={`absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold ${
+                          isSelected
+                            ? 'border-brand-green bg-brand-green text-white'
+                            : 'border-white bg-black/55 text-white'
+                        }`}
+                      >
+                        {isSelected ? <Check className="h-3.5 w-3.5" /> : '+'}
+                      </span>
+                    </button>
+                  )
+                })}
+              </div>
+            </div>
+
+            <div className="mt-4 flex flex-wrap items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setImportPreviewOpen(false)}
+                className="rounded-lg border border-brand-slate/20 px-3 py-2 text-sm font-medium text-brand-slate hover:bg-brand-slate/5"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={confirmImportSelection}
+                disabled={!selectedImportImages.length || importSaving}
+                className="rounded-lg bg-brand-green px-4 py-2 text-sm font-semibold text-white hover:bg-[#489b2d] disabled:opacity-60"
+              >
+                {importSaving ? 'Importing...' : `Import selected (${selectedImportImages.length})`}
               </button>
             </div>
           </div>
