@@ -46,6 +46,29 @@ import {
   Youtube,
   Pencil,
 } from 'lucide-react'
+import {
+  FaDiscord,
+  FaFacebook,
+  FaFacebookMessenger,
+  FaGithub,
+  FaInstagram,
+  FaLine,
+  FaLinkedin,
+  FaMedium,
+  FaPinterest,
+  FaQuora,
+  FaReddit,
+  FaSnapchat,
+  FaTelegram,
+  FaTiktok,
+  FaTwitch,
+  FaVk,
+  FaWeixin,
+  FaWhatsapp,
+  FaXTwitter,
+  FaYoutube,
+} from 'react-icons/fa6'
+import { SiFiverr, SiUpwork } from 'react-icons/si'
 
 const TABS = [
   { key: 'overview', label: 'Overview', icon: BarChart3 },
@@ -53,6 +76,65 @@ const TABS = [
   { key: 'appearance', label: 'Appearance', icon: Palette },
   { key: 'contacts', label: 'Contacts', icon: Contact },
   { key: 'lookbook', label: 'Lookbook', icon: BookImage },
+]
+
+const SOCIAL_PRESET_LINKS = [
+  {
+    key: 'instagram',
+    title: 'Instagram',
+    placeholder: 'https://instagram.com/username',
+    icon: FaInstagram,
+    color: '#E1306C',
+  },
+  {
+    key: 'facebook',
+    title: 'Facebook',
+    placeholder: 'https://facebook.com/username',
+    icon: FaFacebook,
+    color: '#1877F2',
+  },
+  {
+    key: 'linkedin',
+    title: 'LinkedIn',
+    placeholder: 'https://linkedin.com/in/username',
+    icon: FaLinkedin,
+    color: '#0A66C2',
+  },
+  {
+    key: 'x',
+    title: 'X (Twitter)',
+    placeholder: 'https://x.com/username',
+    icon: FaXTwitter,
+    color: '#111827',
+  },
+  {
+    key: 'youtube',
+    title: 'YouTube',
+    placeholder: 'https://youtube.com/@channel',
+    icon: FaYoutube,
+    color: '#FF0000',
+  },
+  {
+    key: 'whatsapp',
+    title: 'WhatsApp',
+    placeholder: 'https://wa.me/234XXXXXXXXXX',
+    icon: FaWhatsapp,
+    color: '#25D366',
+  },
+  {
+    key: 'telegram',
+    title: 'Telegram',
+    placeholder: 'https://t.me/username',
+    icon: FaTelegram,
+    color: '#229ED9',
+  },
+  {
+    key: 'github',
+    title: 'GitHub',
+    placeholder: 'https://github.com/username',
+    icon: FaGithub,
+    color: '#24292F',
+  },
 ]
 
 const emptyChartData = [
@@ -156,6 +238,14 @@ const THEME_PRESETS = [
   },
 ]
 
+const CONTACT_TAG_OPTIONS = [
+  { value: 'new', label: 'New' },
+  { value: 'follow_up', label: 'Follow up' },
+  { value: 'contacted', label: 'Contacted' },
+  { value: 'closed', label: 'Closed' },
+  { value: 'lost', label: 'Lost' },
+]
+
 let refreshPromise = null
 
 const Dashboard = () => {
@@ -180,12 +270,32 @@ const Dashboard = () => {
   const [links, setLinks] = useState([])
   const [linksLoading, setLinksLoading] = useState(true)
   const [linksSaving, setLinksSaving] = useState(false)
+  const [linkActionId, setLinkActionId] = useState(null)
   const [linksError, setLinksError] = useState('')
   const [newLink, setNewLink] = useState({ title: '', url: '' })
+  const [editingLinkId, setEditingLinkId] = useState(null)
+  const [editingLinkForm, setEditingLinkForm] = useState({ title: '', url: '' })
+  const [presetSavingKey, setPresetSavingKey] = useState('')
+  const [presetInputs, setPresetInputs] = useState(() =>
+    Object.fromEntries(SOCIAL_PRESET_LINKS.map((preset) => [preset.key, ''])),
+  )
   const [copiedBioLink, setCopiedBioLink] = useState(false)
   const [contactLeads, setContactLeads] = useState([])
   const [contactsLoading, setContactsLoading] = useState(true)
   const [contactsError, setContactsError] = useState('')
+  const [contactSearch, setContactSearch] = useState('')
+  const [contactFilterTag, setContactFilterTag] = useState('all')
+  const [contactActionId, setContactActionId] = useState(null)
+  const [contactNoteDrafts, setContactNoteDrafts] = useState({})
+  const [portfolioItems, setPortfolioItems] = useState([])
+  const [portfolioLoading, setPortfolioLoading] = useState(true)
+  const [portfolioError, setPortfolioError] = useState('')
+  const [portfolioUploadSaving, setPortfolioUploadSaving] = useState(false)
+  const [portfolioActionId, setPortfolioActionId] = useState(null)
+  const [socialFeedUrl, setSocialFeedUrl] = useState('')
+  const [socialFeedTitle, setSocialFeedTitle] = useState('')
+  const [socialFeedSaving, setSocialFeedSaving] = useState(false)
+  // Backward-compatible lookbook UI state (kept to prevent runtime crashes while portfolio UI is being migrated)
   const [lookbookGallery, setLookbookGallery] = useState(lookbookItems)
   const [socialLink, setSocialLink] = useState('')
   const [socialLoading, setSocialLoading] = useState(false)
@@ -219,12 +329,58 @@ const Dashboard = () => {
   const totalClicks = useMemo(() => summary.total_clicks || 0, [summary])
   const totalCardTaps = useMemo(() => summary.total_card_taps || 0, [summary])
 
+  const { socialPreviewLinks, ordinaryPreviewLinks } = useMemo(() => {
+    const activeLinks = links.filter((link) => link.active)
+    return activeLinks.reduce(
+      (acc, link) => {
+        const meta = getSocialMeta(link.title, link.url)
+        const next = { ...link, meta }
+        if (meta.isSocial) acc.socialPreviewLinks.push(next)
+        else acc.ordinaryPreviewLinks.push(next)
+        return acc
+      },
+      { socialPreviewLinks: [], ordinaryPreviewLinks: [] },
+    )
+  }, [links])
+
   const formatContactDate = (value) => {
     if (!value) return ''
     const date = new Date(value)
     if (Number.isNaN(date.getTime())) return ''
     return date.toLocaleString()
   }
+
+  const getContactTagLabel = (tagValue = '') =>
+    CONTACT_TAG_OPTIONS.find((option) => option.value === tagValue)?.label || 'New'
+
+  const mapApiContactToUi = (lead) => ({
+    id: lead.id,
+    name: lead.name,
+    email: lead.email,
+    phone: lead.phone,
+    source: lead.source,
+    tag: lead.tag || 'new',
+    note: lead.note || '',
+    createdAt: lead.created_at,
+    date: formatContactDate(lead.created_at),
+  })
+
+  const filteredContactLeads = useMemo(() => {
+    const normalizedSearch = contactSearch.trim().toLowerCase()
+
+    return contactLeads.filter((contact) => {
+      const tagMatch = contactFilterTag === 'all' || contact.tag === contactFilterTag
+      if (!tagMatch) return false
+
+      if (!normalizedSearch) return true
+      const haystack = [contact.name, contact.email, contact.phone, contact.note, contact.source]
+        .filter(Boolean)
+        .join(' ')
+        .toLowerCase()
+
+      return haystack.includes(normalizedSearch)
+    })
+  }, [contactLeads, contactSearch, contactFilterTag])
 
   const getImageFileName = (value = '', fallback = 'No file selected') => {
     const trimmed = (value || '').trim()
@@ -242,7 +398,7 @@ const Dashboard = () => {
   }
 
   const downloadContactVCard = (contact) => {
-    if (!contact?.name || !contact?.phone) return
+    if (!contact?.name) return
 
     const fileSafeName = (contact.name || 'contact').replace(/[^a-z0-9]/gi, '_').toLowerCase()
     const vCard = [
@@ -251,6 +407,7 @@ const Dashboard = () => {
       `FN:${contact.name}`,
       contact.phone ? `TEL;TYPE=CELL:${contact.phone}` : '',
       contact.email ? `EMAIL;TYPE=INTERNET:${contact.email}` : '',
+      contact.note ? `NOTE:${contact.note.replace(/\n/g, ' ')}` : '',
       'END:VCARD',
     ]
       .filter(Boolean)
@@ -261,6 +418,70 @@ const Dashboard = () => {
     const link = document.createElement('a')
     link.href = url
     link.download = `${fileSafeName || 'contact'}.vcf`
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const exportContactsCsv = (contactsToExport) => {
+    if (!contactsToExport.length) return
+
+    const headers = ['Name', 'Email', 'Phone', 'Tag', 'Note', 'Date', 'Source']
+    const escapeCsv = (value = '') => `"${String(value).replace(/"/g, '""')}"`
+    const rows = contactsToExport.map((contact) => [
+      contact.name || '',
+      contact.email || '',
+      contact.phone || '',
+      getContactTagLabel(contact.tag),
+      contact.note || '',
+      contact.date || '',
+      contact.source || '',
+    ])
+
+    const csvContent = [headers, ...rows]
+      .map((row) => row.map(escapeCsv).join(','))
+      .join('\n')
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'ahju_contacts.csv'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const exportContactsVcf = (contactsToExport) => {
+    if (!contactsToExport.length) return
+
+    const payload = contactsToExport
+      .map((contact) => {
+        if (!contact?.name) return ''
+        return [
+          'BEGIN:VCARD',
+          'VERSION:3.0',
+          `FN:${contact.name}`,
+          contact.phone ? `TEL;TYPE=CELL:${contact.phone}` : '',
+          contact.email ? `EMAIL;TYPE=INTERNET:${contact.email}` : '',
+          contact.note ? `NOTE:${contact.note.replace(/\n/g, ' ')}` : '',
+          'END:VCARD',
+        ]
+          .filter(Boolean)
+          .join('\n')
+      })
+      .filter(Boolean)
+      .join('\n\n')
+
+    if (!payload) return
+
+    const blob = new Blob([payload], { type: 'text/vcard;charset=utf-8' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'ahju_contacts.vcf'
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
@@ -282,38 +503,93 @@ const Dashboard = () => {
     return `https://${trimmed}`
   }
 
-  const getSocialMeta = (title = '', url = '') => {
+  const resolveUrl = (base, relative) => {
+    try {
+      return new URL(relative, base).href
+    } catch {
+      return null
+    }
+  }
+
+  const scrapeImageUrlsFromPage = async (pageUrl) => {
+    const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(pageUrl)}`
+    const response = await fetch(proxyUrl)
+    if (!response.ok) {
+      throw new Error(`Could not fetch page content (HTTP ${response.status})`)
+    }
+
+    const data = await response.json()
+    const html = data?.contents || ''
+    if (!html) return []
+
+    const parser = new DOMParser()
+    const doc = parser.parseFromString(html, 'text/html')
+    const imageSet = new Set()
+
+    doc.querySelectorAll('img').forEach((img) => {
+      const src = img.getAttribute('src') || img.getAttribute('data-src') || ''
+      const resolved = resolveUrl(pageUrl, src)
+      if (resolved) imageSet.add(resolved)
+    })
+
+    doc.querySelectorAll('*').forEach((el) => {
+      const style = el.getAttribute('style') || ''
+      if (!style.includes('url(')) return
+      const matches = style.match(/url\(["']?(.*?)["']?\)/gi) || []
+      matches.forEach((m) => {
+        const path = m.match(/url\(["']?(.*?)["']?\)/)?.[1]
+        const resolved = resolveUrl(pageUrl, path)
+        if (resolved) imageSet.add(resolved)
+      })
+    })
+
+    const ogImage = doc.querySelector('meta[property="og:image"]')?.getAttribute('content')
+    if (ogImage) {
+      const resolved = resolveUrl(pageUrl, ogImage)
+      if (resolved) imageSet.add(resolved)
+    }
+
+    return Array.from(imageSet).filter((src) => {
+      const lower = src.toLowerCase()
+      if (lower.includes('1x1') || lower.includes('pixel') || lower.startsWith('data:image')) return false
+      return /\.(jpe?g|png|gif|webp|svg|bmp)(\?|$)/i.test(lower)
+    })
+  }
+
+  function getSocialMeta(title = '', url = '') {
     const normalized = `${title} ${url}`.toLowerCase()
 
-    if (normalized.includes('instagram')) return { icon: Instagram, color: '#E1306C' }
-    if (normalized.includes('facebook')) return { icon: Facebook, color: '#1877F2' }
-    if (normalized.includes('threads') || normalized.includes('threads.net')) return { icon: AtSign, color: '#111111' }
-    if (normalized.includes('snapchat') || normalized.includes('snap.com')) return { icon: Ghost, color: '#FFFC00' }
-    if (normalized.includes('whatsapp') || normalized.includes('wa.me')) return { icon: MessageCircle, color: '#25D366' }
-    if (normalized.includes('telegram') || normalized.includes('t.me')) return { icon: Send, color: '#229ED9' }
-    if (normalized.includes('messenger') || normalized.includes('m.me')) return { icon: MessageSquare, color: '#0084FF' }
-    if (normalized.includes('discord') || normalized.includes('discord.gg')) return { icon: MessageSquare, color: '#5865F2' }
-    if (normalized.includes('wechat') || normalized.includes('weixin')) return { icon: MessageCircle, color: '#07C160' }
-    if (normalized.includes('signal')) return { icon: Signal, color: '#3A76F0' }
-    if (normalized.includes('linkedin')) return { icon: Linkedin, color: '#0A66C2' }
-    if (normalized.includes('youtube')) return { icon: Youtube, color: '#FF0000' }
-    if (normalized.includes('twitter') || normalized.includes('x.com')) return { icon: Twitter, color: '#111827' }
-    if (normalized.includes('tiktok')) return { icon: Music2, color: '#111827' }
-    if (normalized.includes('twitch')) return { icon: Tv, color: '#9146FF' }
-    if (normalized.includes('kick')) return { icon: Tv, color: '#53FC18' }
-    if (normalized.includes('rumble')) return { icon: Play, color: '#85C742' }
-    if (normalized.includes('xing')) return { icon: AtSign, color: '#006567' }
-    if (normalized.includes('reddit')) return { icon: MessageSquare, color: '#FF4500' }
-    if (normalized.includes('pinterest') || normalized.includes('pin.it')) return { icon: Pin, color: '#E60023' }
-    if (normalized.includes('quora')) return { icon: BookOpen, color: '#B92B27' }
-    if (normalized.includes('medium')) return { icon: BookOpen, color: '#12100E' }
-    if (normalized.includes('kuaishou')) return { icon: Play, color: '#FF5E2B' }
-    if (normalized.includes('bilibili')) return { icon: Tv, color: '#00A1D6' }
-    if (normalized.includes('line.me') || normalized.includes('line ')) return { icon: MessageCircle, color: '#06C755' }
-    if (normalized.includes('vk.com') || normalized.includes('vkontakte') || normalized.includes('vk ')) return { icon: MessageSquare, color: '#0077FF' }
-    if (normalized.includes('github')) return { icon: Github, color: '#24292F' }
+    if (normalized.includes('instagram')) return { icon: FaInstagram, color: '#E1306C', isSocial: true }
+    if (normalized.includes('facebook')) return { icon: FaFacebook, color: '#1877F2', isSocial: true }
+    if (normalized.includes('threads') || normalized.includes('threads.net')) return { icon: AtSign, color: '#111111', isSocial: true }
+    if (normalized.includes('snapchat') || normalized.includes('snap.com')) return { icon: FaSnapchat, color: '#FFFC00', isSocial: true }
+    if (normalized.includes('whatsapp') || normalized.includes('wa.me')) return { icon: FaWhatsapp, color: '#25D366', isSocial: true }
+    if (normalized.includes('telegram') || normalized.includes('t.me')) return { icon: FaTelegram, color: '#229ED9', isSocial: true }
+    if (normalized.includes('messenger') || normalized.includes('m.me')) return { icon: FaFacebookMessenger, color: '#0084FF', isSocial: true }
+    if (normalized.includes('discord') || normalized.includes('discord.gg')) return { icon: FaDiscord, color: '#5865F2', isSocial: true }
+    if (normalized.includes('wechat') || normalized.includes('weixin')) return { icon: FaWeixin, color: '#07C160', isSocial: true }
+    if (normalized.includes('signal')) return { icon: Signal, color: '#3A76F0', isSocial: true }
+    if (normalized.includes('linkedin')) return { icon: FaLinkedin, color: '#0A66C2', isSocial: true }
+    if (normalized.includes('youtube')) return { icon: FaYoutube, color: '#FF0000', isSocial: true }
+    if (normalized.includes('twitter') || normalized.includes('x.com')) return { icon: FaXTwitter, color: '#111827', isSocial: true }
+    if (normalized.includes('tiktok')) return { icon: FaTiktok, color: '#111827', isSocial: true }
+    if (normalized.includes('twitch')) return { icon: FaTwitch, color: '#9146FF', isSocial: true }
+    if (normalized.includes('kick')) return { icon: Tv, color: '#53FC18', isSocial: true }
+    if (normalized.includes('rumble')) return { icon: Play, color: '#85C742', isSocial: true }
+    if (normalized.includes('xing')) return { icon: AtSign, color: '#006567', isSocial: true }
+    if (normalized.includes('reddit')) return { icon: FaReddit, color: '#FF4500', isSocial: true }
+    if (normalized.includes('pinterest') || normalized.includes('pin.it')) return { icon: FaPinterest, color: '#E60023', isSocial: true }
+    if (normalized.includes('quora')) return { icon: FaQuora, color: '#B92B27', isSocial: true }
+    if (normalized.includes('medium')) return { icon: FaMedium, color: '#12100E', isSocial: true }
+    if (normalized.includes('kuaishou')) return { icon: Play, color: '#FF5E2B', isSocial: true }
+    if (normalized.includes('bilibili')) return { icon: Tv, color: '#00A1D6', isSocial: true }
+    if (normalized.includes('line.me') || normalized.includes('line ')) return { icon: FaLine, color: '#06C755', isSocial: true }
+    if (normalized.includes('vk.com') || normalized.includes('vkontakte') || normalized.includes('vk ')) return { icon: FaVk, color: '#0077FF', isSocial: true }
+    if (normalized.includes('github')) return { icon: FaGithub, color: '#24292F', isSocial: true }
+    if (normalized.includes('fiverr') || normalized.includes('fiver')) return { icon: SiFiverr, color: '#1DBF73', isSocial: true }
+    if (normalized.includes('upwork')) return { icon: SiUpwork, color: '#14A800', isSocial: true }
 
-    return { icon: Globe, color: '#348539' }
+    return { icon: Globe, color: '#348539', isSocial: false }
   }
 
   const getValidAccessToken = async () => {
@@ -416,16 +692,19 @@ const Dashboard = () => {
       setAnalyticsLoading(true)
       setLinksLoading(true)
       setContactsLoading(true)
+      setPortfolioLoading(true)
       setAnalyticsError('')
       setLinksError('')
       setContactsError('')
+      setPortfolioError('')
       try {
-        const [summaryRes, timeseriesRes, appearanceRes, linksRes, contactsRes] = await Promise.all([
+        const [summaryRes, timeseriesRes, appearanceRes, linksRes, contactsRes, portfolioRes] = await Promise.all([
           authorizedFetch(`${apiBaseUrl}/api/dashboard/summary/`),
           authorizedFetch(`${apiBaseUrl}/api/dashboard/timeseries/`),
           authorizedFetch(`${apiBaseUrl}/api/users/appearance/`),
           authorizedFetch(`${apiBaseUrl}/api/users/links/`),
           authorizedFetch(`${apiBaseUrl}/api/users/contacts/`),
+          authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`),
         ])
 
         const summaryData = await summaryRes.json()
@@ -433,6 +712,7 @@ const Dashboard = () => {
         const appearanceData = await appearanceRes.json()
         const linksData = await linksRes.json()
         const contactsData = await contactsRes.json()
+        const portfolioData = await portfolioRes.json()
 
         if (!summaryRes.ok) {
           throw new Error(summaryData?.detail || 'Failed to load dashboard summary')
@@ -449,22 +729,19 @@ const Dashboard = () => {
         if (!contactsRes.ok) {
           throw new Error(contactsData?.detail || 'Failed to load contacts')
         }
+        if (!portfolioRes.ok) {
+          throw new Error(portfolioData?.detail || 'Failed to load portfolio')
+        }
 
         setSummary(summaryData)
         setChartData(Array.isArray(timeseriesData?.data) ? timeseriesData.data : emptyChartData)
         setLinks(Array.isArray(linksData) ? linksData.map(mapApiLinkToUi) : [])
-        setContactLeads(
-          Array.isArray(contactsData)
-            ? contactsData.map((lead) => ({
-                id: lead.id,
-                name: lead.name,
-                email: lead.email,
-                phone: lead.phone,
-                source: lead.source,
-                date: formatContactDate(lead.created_at),
-              }))
-            : [],
+        const mappedContacts = Array.isArray(contactsData) ? contactsData.map(mapApiContactToUi) : []
+        setContactLeads(mappedContacts)
+        setContactNoteDrafts(
+          Object.fromEntries(mappedContacts.map((contact) => [contact.id, contact.note || ''])),
         )
+        setPortfolioItems(Array.isArray(portfolioData) ? portfolioData : [])
         setAppearance((prev) => ({
           ...prev,
           displayName: appearanceData.display_name ?? '',
@@ -479,14 +756,17 @@ const Dashboard = () => {
         setAnalyticsError(err.message || 'Unable to load analytics')
         setLinksError(err.message || 'Unable to load links')
         setContactsError(err.message || 'Unable to load contacts')
+        setPortfolioError(err.message || 'Unable to load portfolio')
         setSummary({ total_views: 0, total_clicks: 0, total_card_taps: 0, ctr: 0 })
         setChartData(emptyChartData)
         setLinks([])
         setContactLeads([])
+        setPortfolioItems([])
       } finally {
         setAnalyticsLoading(false)
         setLinksLoading(false)
         setContactsLoading(false)
+        setPortfolioLoading(false)
       }
     }
 
@@ -530,11 +810,165 @@ const Dashboard = () => {
     }
   }
 
-  const deleteLink = (id) => setLinks((prev) => prev.filter((link) => link.id !== id))
-  const toggleLink = (id) =>
-    setLinks((prev) =>
-      prev.map((link) => (link.id === id ? { ...link, active: !link.active } : link)),
-    )
+  const getPresetLink = (title = '') =>
+    links.find((link) => (link.title || '').trim().toLowerCase() === title.trim().toLowerCase())
+
+  const addPresetLink = async (preset) => {
+    const rawValue = (presetInputs[preset.key] || '').trim()
+    if (!rawValue) return
+
+    setPresetSavingKey(preset.key)
+    setLinksError('')
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          title: preset.title,
+          url: normalizeLinkUrl(rawValue),
+          is_active: true,
+        }),
+      })
+      const data = await response.json()
+      if (!response.ok) {
+        if (data && typeof data === 'object') {
+          const firstFieldError = Object.values(data).flat?.()[0]
+          throw new Error(firstFieldError || data?.detail || `Could not add ${preset.title} link`)
+        }
+        throw new Error(data?.detail || `Could not add ${preset.title} link`)
+      }
+
+      setLinks((prev) => [mapApiLinkToUi(data), ...prev])
+      setPresetInputs((prev) => ({ ...prev, [preset.key]: '' }))
+    } catch (err) {
+      setLinksError(err.message || `Could not add ${preset.title} link`)
+    } finally {
+      setPresetSavingKey('')
+    }
+  }
+
+  const deleteLink = async (id) => {
+    const existing = links.find((link) => link.id === id)
+    if (!existing) return
+
+    setLinkActionId(id)
+    setLinksError('')
+    setLinks((prev) => prev.filter((link) => link.id !== id))
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/${id}/`, {
+        method: 'DELETE',
+      })
+      if (!response.ok && response.status !== 204) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.detail || 'Could not delete link')
+      }
+    } catch (err) {
+      setLinks((prev) => [existing, ...prev])
+      setLinksError(err.message || 'Could not delete link')
+    } finally {
+      setLinkActionId(null)
+    }
+  }
+
+  const toggleLink = async (id) => {
+    const existing = links.find((link) => link.id === id)
+    if (!existing) return
+
+    const nextActive = !existing.active
+    setLinkActionId(id)
+    setLinksError('')
+    setLinks((prev) => prev.map((link) => (link.id === id ? { ...link, active: nextActive } : link)))
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/${id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ is_active: nextActive }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not update link status')
+      }
+
+      setLinks((prev) =>
+        prev.map((link) =>
+          link.id === id
+            ? {
+                ...link,
+                active: data?.is_active ?? nextActive,
+              }
+            : link,
+        ),
+      )
+    } catch (err) {
+      setLinks((prev) => prev.map((link) => (link.id === id ? { ...link, active: existing.active } : link)))
+      setLinksError(err.message || 'Could not update link status')
+    } finally {
+      setLinkActionId(null)
+    }
+  }
+
+  const startEditingLink = (link) => {
+    if (!link?.id) return
+    setLinksError('')
+    setEditingLinkId(link.id)
+    setEditingLinkForm({
+      title: link.title || '',
+      url: link.url || '',
+    })
+  }
+
+  const cancelEditingLink = () => {
+    setEditingLinkId(null)
+    setEditingLinkForm({ title: '', url: '' })
+  }
+
+  const saveEditedLink = async (id) => {
+    if (!id) return
+    const title = editingLinkForm.title.trim()
+    const url = normalizeLinkUrl(editingLinkForm.url)
+    if (!title || !url) {
+      setLinksError('Title and URL are required to update a link')
+      return
+    }
+
+    setLinkActionId(id)
+    setLinksError('')
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/${id}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ title, url }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not update link')
+      }
+
+      setLinks((prev) =>
+        prev.map((link) => (link.id === id ? { ...link, ...mapApiLinkToUi(data) } : link)),
+      )
+      cancelEditingLink()
+    } catch (err) {
+      setLinksError(err.message || 'Could not update link')
+    } finally {
+      setLinkActionId(null)
+    }
+  }
 
   const copyBioLink = async () => {
     try {
@@ -546,34 +980,141 @@ const Dashboard = () => {
     }
   }
 
-  const handleLookbookUpload = (e) => {
+  const handleLookbookUpload = async (e) => {
     const files = Array.from(e.target.files || [])
     if (!files.length) return
 
-    const uploadedItems = files.map((file) => ({
-      name: file.name.replace(/\.[^/.]+$/, ''),
-      image: URL.createObjectURL(file),
-    }))
+    setPortfolioUploadSaving(true)
+    setPortfolioError('')
 
-    setLookbookGallery((prev) => [...uploadedItems, ...prev])
-    e.target.value = ''
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const created = []
+
+      for (const file of files) {
+        const formData = new FormData()
+        formData.append('image', file)
+
+        const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/upload/`, {
+          method: 'POST',
+          body: formData,
+        })
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.detail || 'Could not upload image to portfolio')
+        }
+        created.push(data)
+      }
+
+      setPortfolioItems((prev) => [...created, ...prev])
+    } catch (err) {
+      setPortfolioError(err.message || 'Could not upload image to portfolio')
+    } finally {
+      setPortfolioUploadSaving(false)
+      e.target.value = ''
+    }
   }
 
-  const importFromSocial = () => {
+  const importFromSocial = async () => {
     if (!socialLink.trim()) return
 
     setSocialLoading(true)
-    setTimeout(() => {
-      const mockedSocialImages = [
-        { name: 'Social Post 1', image: new URL('../../AHJU Black Card.jpg', import.meta.url).href },
-        { name: 'Social Post 2', image: new URL('../../AHJU Bamboo Card.jpg', import.meta.url).href },
-        { name: 'Social Post 3', image: new URL('../../AHJU Classic PVC Card.jpg', import.meta.url).href },
-        { name: 'Social Post 4', image: new URL('../../AHJU Key Tag.jpg', import.meta.url).href },
-      ]
+    setPortfolioError('')
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const normalizedLink = normalizeLinkUrl(socialLink)
 
-      setLookbookGallery((prev) => [...mockedSocialImages, ...prev])
+      // 1) Try importing multiple images from the page URL (best effort)
+      const scrapedImages = await scrapeImageUrlsFromPage(normalizedLink)
+      const imagesToImport = scrapedImages.slice(0, 12)
+
+      if (imagesToImport.length > 0) {
+        const createdItems = []
+        for (let i = 0; i < imagesToImport.length; i += 1) {
+          const imageUrl = imagesToImport[i]
+          const createRes = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              kind: 'upload',
+              title: `${socialFeedTitle.trim() || 'Imported image'} ${i + 1}`,
+              image_url: imageUrl,
+              source_url: normalizedLink,
+              is_active: true,
+            }),
+          })
+
+          const createData = await createRes.json()
+          if (createRes.ok) {
+            createdItems.push(createData)
+          }
+        }
+
+        if (!createdItems.length) {
+          throw new Error('Images were found but could not be saved to your portfolio.')
+        }
+
+        setPortfolioItems((prev) => [...createdItems, ...prev])
+      } else {
+        // 2) Fallback: create a social embed item (works well for post links)
+        const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            kind: 'social',
+            title: socialFeedTitle.trim() || 'Social post',
+            source_url: normalizedLink,
+            is_active: true,
+          }),
+        })
+
+        const data = await response.json()
+        if (!response.ok) {
+          throw new Error(data?.detail || 'Could not import social link')
+        }
+
+        setPortfolioItems((prev) => [data, ...prev])
+      }
+
+      setSocialLink('')
+      setSocialFeedTitle('')
+    } catch (err) {
+      setPortfolioError(err.message || 'Could not import social link')
+    } finally {
       setSocialLoading(false)
-    }, 800)
+    }
+  }
+
+  const deletePortfolioItem = async (itemId) => {
+    if (!itemId) return
+
+    const existing = portfolioItems.find((item) => item.id === itemId)
+    if (!existing) return
+
+    setPortfolioActionId(itemId)
+    setPortfolioError('')
+    setPortfolioItems((prev) => prev.filter((item) => item.id !== itemId))
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/${itemId}/`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok && response.status !== 204) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.detail || 'Could not delete portfolio item')
+      }
+    } catch (err) {
+      setPortfolioItems((prev) => [existing, ...prev])
+      setPortfolioError(err.message || 'Could not delete portfolio item')
+    } finally {
+      setPortfolioActionId(null)
+    }
   }
 
   const handleAppearanceImageUpload = async (e, type) => {
@@ -618,6 +1159,9 @@ const Dashboard = () => {
         email: publicContactForm.email.trim(),
         phone: publicContactForm.phone.trim(),
         source: 'Profile Connect Form',
+        tag: 'new',
+        note: '',
+        createdAt: new Date().toISOString(),
         date: 'Just now',
       },
       ...prev,
@@ -626,6 +1170,127 @@ const Dashboard = () => {
     setPublicContactForm({ name: '', email: '', phone: '' })
     setConnectSaved(true)
     setTimeout(() => setConnectSaved(false), 1800)
+  }
+
+  const updateContactTag = async (contactId, nextTag) => {
+    const existing = contactLeads.find((contact) => contact.id === contactId)
+    if (!existing) return
+
+    setContactActionId(contactId)
+    setContactsError('')
+    setContactLeads((prev) =>
+      prev.map((contact) => (contact.id === contactId ? { ...contact, tag: nextTag } : contact)),
+    )
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/${contactId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ tag: nextTag }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not update contact tag')
+      }
+
+      setContactLeads((prev) =>
+        prev.map((contact) =>
+          contact.id === contactId ? { ...contact, tag: data?.tag || nextTag } : contact,
+        ),
+      )
+    } catch (err) {
+      setContactLeads((prev) =>
+        prev.map((contact) =>
+          contact.id === contactId ? { ...contact, tag: existing.tag || 'new' } : contact,
+        ),
+      )
+      setContactsError(err.message || 'Could not update contact tag')
+    } finally {
+      setContactActionId(null)
+    }
+  }
+
+  const saveContactNote = async (contactId) => {
+    const existing = contactLeads.find((contact) => contact.id === contactId)
+    if (!existing) return
+
+    const draftNote = contactNoteDrafts[contactId] ?? ''
+    if ((existing.note || '') === draftNote) return
+
+    setContactActionId(contactId)
+    setContactsError('')
+    setContactLeads((prev) =>
+      prev.map((contact) => (contact.id === contactId ? { ...contact, note: draftNote } : contact)),
+    )
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/${contactId}/`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ note: draftNote }),
+      })
+
+      const data = await response.json().catch(() => ({}))
+      if (!response.ok) {
+        throw new Error(data?.detail || 'Could not save note')
+      }
+
+      setContactLeads((prev) =>
+        prev.map((contact) =>
+          contact.id === contactId ? { ...contact, note: data?.note ?? draftNote } : contact,
+        ),
+      )
+      setContactNoteDrafts((prev) => ({ ...prev, [contactId]: data?.note ?? draftNote }))
+    } catch (err) {
+      setContactLeads((prev) =>
+        prev.map((contact) =>
+          contact.id === contactId ? { ...contact, note: existing.note || '' } : contact,
+        ),
+      )
+      setContactNoteDrafts((prev) => ({ ...prev, [contactId]: existing.note || '' }))
+      setContactsError(err.message || 'Could not save note')
+    } finally {
+      setContactActionId(null)
+    }
+  }
+
+  const deleteContactLead = async (contactId) => {
+    const existing = contactLeads.find((contact) => contact.id === contactId)
+    if (!existing) return
+
+    setContactActionId(contactId)
+    setContactsError('')
+    setContactLeads((prev) => prev.filter((contact) => contact.id !== contactId))
+
+    try {
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/${contactId}/`, {
+        method: 'DELETE',
+      })
+
+      if (!response.ok && response.status !== 204) {
+        const data = await response.json().catch(() => ({}))
+        throw new Error(data?.detail || 'Could not delete contact')
+      }
+
+      setContactNoteDrafts((prev) => {
+        const next = { ...prev }
+        delete next[contactId]
+        return next
+      })
+    } catch (err) {
+      setContactLeads((prev) => [existing, ...prev])
+      setContactsError(err.message || 'Could not delete contact')
+    } finally {
+      setContactActionId(null)
+    }
   }
 
   const saveAppearanceSettings = async () => {
@@ -992,6 +1657,86 @@ const Dashboard = () => {
                 </button>
                 </div>
 
+              <div className="rounded-2xl border border-brand-slate/10 bg-white p-3 sm:p-4 md:p-5">
+                <div className="mb-4">
+                  <h3 className="text-base font-semibold text-brand-charcoal">Quick add social links</h3>
+                  <p className="text-sm text-brand-slate/70">
+                    Pick a platform, paste your profile link once, then toggle it on or off.
+                  </p>
+                </div>
+
+                <div className="flex gap-2.5 overflow-x-auto pb-1 scrollbar-hide md:grid md:overflow-visible md:pb-0 md:grid-cols-2 xl:grid-cols-3">
+                  {SOCIAL_PRESET_LINKS.map((preset) => {
+                    const Icon = preset.icon
+                    const existingLink = getPresetLink(preset.title)
+
+                    return (
+                      <div key={preset.key} className="min-w-[250px] rounded-xl border border-brand-slate/15 p-2.5 sm:p-3 md:min-w-0">
+                        <div className="mb-2 flex items-center gap-2">
+                          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-slate/10">
+                            <Icon className="h-4 w-4" style={{ color: preset.color }} />
+                          </span>
+                          <p className="truncate text-sm font-medium text-brand-charcoal sm:text-[15px]">{preset.title}</p>
+                        </div>
+
+                        {!existingLink ? (
+                          <>
+                            <input
+                              placeholder={preset.placeholder}
+                              value={presetInputs[preset.key] || ''}
+                              onChange={(e) =>
+                                setPresetInputs((prev) => ({
+                                  ...prev,
+                                  [preset.key]: e.target.value,
+                                }))
+                              }
+                              className="h-10 w-full min-w-0 rounded-lg border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                            />
+                            <button
+                              type="button"
+                              onClick={() => addPresetLink(preset)}
+                              disabled={presetSavingKey === preset.key}
+                              className="mt-2 inline-flex h-10 w-full items-center justify-center rounded-lg bg-brand-green px-3 text-sm font-semibold text-white hover:bg-[#489b2d] disabled:opacity-70"
+                            >
+                              {presetSavingKey === preset.key ? 'Adding...' : 'Add'}
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <p className="truncate text-xs text-brand-slate/75 sm:text-sm" title={existingLink.url}>
+                              {existingLink.url}
+                            </p>
+                            <div className="mt-2 flex items-center justify-between gap-2">
+                              <span
+                                className={`text-xs font-medium ${existingLink.active ? 'text-brand-green' : 'text-brand-slate/60'}`}
+                              >
+                                {existingLink.active ? 'Active' : 'Inactive'}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => toggleLink(existingLink.id)}
+                                disabled={linkActionId === existingLink.id}
+                                className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                  existingLink.active ? 'bg-brand-green' : 'bg-brand-slate/30'
+                                } disabled:opacity-60`}
+                                aria-label={existingLink.active ? `Deactivate ${preset.title}` : `Activate ${preset.title}`}
+                                title={existingLink.active ? `Deactivate ${preset.title}` : `Activate ${preset.title}`}
+                              >
+                                <span
+                                  className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                    existingLink.active ? 'translate-x-5' : 'translate-x-1'
+                                  }`}
+                                />
+                              </button>
+                            </div>
+                          </>
+                        )}
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
               <form onSubmit={addLink} className="grid gap-3 rounded-2xl border border-brand-slate/10 bg-white p-4 md:grid-cols-[1fr_1fr_auto] md:p-5">
                 <input
                   placeholder="Link title"
@@ -1030,49 +1775,116 @@ const Dashboard = () => {
                     No links yet. Add your first link above.
                   </div>
                 )}
-                {links.map((link) => (
-                  <div key={link.id} className="flex min-w-0 items-center justify-between gap-3 rounded-2xl border border-brand-slate/10 bg-white p-4">
-                    <div className="min-w-0 flex items-center gap-2.5">
-                      {(() => {
-                        const meta = getSocialMeta(link.title, link.url)
-                        const Icon = meta.icon
-                        return (
-                          <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-slate/10">
-                            <Icon className="h-4 w-4" style={{ color: meta.color }} />
-                          </span>
-                        )
-                      })()}
-                      <div className="min-w-0">
-                        <p className="font-semibold text-brand-charcoal">{link.title}</p>
-                        <p className="truncate text-sm text-brand-slate/70">{link.url}</p>
+                {links.map((link) => {
+                  const isEditing = editingLinkId === link.id
+                  const isBusy = linkActionId === link.id
+
+                  return (
+                    <div key={link.id} className="flex min-w-0 flex-col gap-3 rounded-2xl border border-brand-slate/10 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
+                      <div className="min-w-0 flex items-start gap-2.5">
+                        {(() => {
+                          const meta = getSocialMeta(link.title, link.url)
+                          const Icon = meta.icon
+                          return (
+                            <span className="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-brand-slate/10">
+                              <Icon className="h-4 w-4" style={{ color: meta.color }} />
+                            </span>
+                          )
+                        })()}
+
+                        <div className="min-w-0 flex-1">
+                          {!isEditing ? (
+                            <>
+                              <p className="font-semibold text-brand-charcoal">{link.title}</p>
+                              <p className="truncate text-sm text-brand-slate/70">{link.url}</p>
+                            </>
+                          ) : (
+                            <div className="space-y-2">
+                              <input
+                                value={editingLinkForm.title}
+                                onChange={(e) =>
+                                  setEditingLinkForm((prev) => ({ ...prev, title: e.target.value }))
+                                }
+                                placeholder="Link title"
+                                className="h-9 w-full rounded-lg border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                              />
+                              <input
+                                value={editingLinkForm.url}
+                                onChange={(e) =>
+                                  setEditingLinkForm((prev) => ({ ...prev, url: e.target.value }))
+                                }
+                                placeholder="https://your-link.com"
+                                className="h-9 w-full rounded-lg border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                              />
+                            </div>
+                          )}
+                        </div>
+                      </div>
+
+                      <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
+                        {!isEditing ? (
+                          <>
+                            <span className="hidden text-sm text-brand-slate/70 sm:inline">{link.clicks} clicks</span>
+                            <span className={`hidden text-xs font-medium sm:inline ${link.active ? 'text-brand-green' : 'text-brand-slate/60'}`}>
+                              {link.active ? 'Active' : 'Inactive'}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => startEditingLink(link)}
+                              disabled={isBusy}
+                              className="text-brand-slate hover:text-brand-charcoal disabled:cursor-not-allowed disabled:opacity-50"
+                              title="Edit link"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </button>
+                            <button
+                              onClick={() => deleteLink(link.id)}
+                              disabled={isBusy}
+                              className="text-red-500 hover:text-red-600 disabled:cursor-not-allowed disabled:opacity-50"
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => toggleLink(link.id)}
+                              disabled={isBusy}
+                              className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
+                                link.active ? 'bg-brand-green' : 'bg-brand-slate/30'
+                              } disabled:opacity-60`}
+                              aria-label={link.active ? 'Deactivate link' : 'Activate link'}
+                              title={link.active ? 'Deactivate link' : 'Activate link'}
+                            >
+                              <span
+                                className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
+                                  link.active ? 'translate-x-5' : 'translate-x-1'
+                                }`}
+                              />
+                            </button>
+                          </>
+                        ) : (
+                          <>
+                            <button
+                              type="button"
+                              onClick={() => saveEditedLink(link.id)}
+                              disabled={isBusy}
+                              className="inline-flex h-9 items-center justify-center rounded-lg bg-brand-green px-3 text-xs font-semibold text-white hover:bg-[#489b2d] disabled:opacity-60"
+                            >
+                              {isBusy ? 'Saving...' : 'Save'}
+                            </button>
+                            <button
+                              type="button"
+                              onClick={cancelEditingLink}
+                              disabled={isBusy}
+                              className="inline-flex h-9 items-center justify-center rounded-lg border border-brand-slate/20 px-3 text-xs font-semibold text-brand-slate hover:bg-brand-slate/5 disabled:opacity-60"
+                            >
+                              Cancel
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
-                    <div className="ml-auto flex shrink-0 items-center gap-2 sm:gap-3">
-                      <span className="hidden text-sm text-brand-slate/70 sm:inline">{link.clicks} clicks</span>
-                      <span className={`hidden text-xs font-medium sm:inline ${link.active ? 'text-brand-green' : 'text-brand-slate/60'}`}>
-                        {link.active ? 'Active' : 'Inactive'}
-                      </span>
-                      <button onClick={() => deleteLink(link.id)} className="text-red-500 hover:text-red-600">
-                        <Trash2 className="h-4 w-4" />
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => toggleLink(link.id)}
-                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition ${
-                          link.active ? 'bg-brand-green' : 'bg-brand-slate/30'
-                        }`}
-                        aria-label={link.active ? 'Deactivate link' : 'Activate link'}
-                        title={link.active ? 'Deactivate link' : 'Activate link'}
-                      >
-                        <span
-                          className={`inline-block h-5 w-5 transform rounded-full bg-white transition ${
-                            link.active ? 'translate-x-5' : 'translate-x-1'
-                          }`}
-                        />
-                      </button>
-                    </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           )}
@@ -1238,23 +2050,50 @@ const Dashboard = () => {
                             <p className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
                               Links
                             </p>
-                            {links.filter((link) => link.active).map((link) => (
-                              <button
-                                key={link.id}
-                                type="button"
-                                className="w-full rounded-xl px-3 py-2 text-sm font-semibold text-white"
-                                style={{ backgroundColor: activeTheme.buttonBg }}
-                              >
-                                <span className="inline-flex items-center gap-2">
-                                  {(() => {
-                                    const meta = getSocialMeta(link.title, link.url)
-                                    const Icon = meta.icon
-                                    return <Icon className="h-4 w-4" />
-                                  })()}
-                                  {link.title}
-                                </span>
-                              </button>
-                            ))}
+                            {socialPreviewLinks.length > 0 && (
+                              <div className="grid grid-cols-3 gap-2.5">
+                                {socialPreviewLinks.map((link) => {
+                                  const Icon = link.meta.icon
+                                  return (
+                                    <button
+                                      key={link.id}
+                                      type="button"
+                                      className="inline-flex h-10 w-full items-center justify-center rounded-xl border border-brand-slate/15"
+                                      style={{ backgroundColor: `${activeTheme.buttonBg}18` }}
+                                    >
+                                      <Icon className="h-4 w-4" style={{ color: link.meta.color }} />
+                                    </button>
+                                  )
+                                })}
+                              </div>
+                            )}
+
+                            {ordinaryPreviewLinks.length > 0 && (
+                              <div className="space-y-2">
+                                <p className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
+                                  Other links
+                                </p>
+                                {ordinaryPreviewLinks.map((link) => (
+                                  <button
+                                    key={link.id}
+                                    type="button"
+                                    className="w-full rounded-xl px-3 py-2 text-sm font-semibold text-white"
+                                    style={{ backgroundColor: activeTheme.buttonBg }}
+                                  >
+                                    <span className="inline-flex items-center gap-2">
+                                      <Globe className="h-4 w-4" />
+                                      {link.title}
+                                    </span>
+                                  </button>
+                                ))}
+                              </div>
+                            )}
+
+                            {socialPreviewLinks.length === 0 && ordinaryPreviewLinks.length === 0 && (
+                              <p className="rounded-xl border border-brand-slate/10 px-3 py-2 text-xs" style={{ color: activeTheme.mutedText }}>
+                                No links available.
+                              </p>
+                            )}
 
                             <div className="rounded-xl border p-3" style={{ borderColor: `${activeTheme.accent}66` }}>
                               <p className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
@@ -1265,7 +2104,7 @@ const Dashboard = () => {
                                   placeholder="Your name"
                                   value={publicContactForm.name}
                                   onChange={(e) => setPublicContactForm((prev) => ({ ...prev, name: e.target.value }))}
-                                  className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate/70"
+                                  className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
                                   style={{
                                     borderColor: `${activeTheme.accent}55`,
                                     color: activeTheme.textColor,
@@ -1277,7 +2116,7 @@ const Dashboard = () => {
                                   type="email"
                                   value={publicContactForm.email}
                                   onChange={(e) => setPublicContactForm((prev) => ({ ...prev, email: e.target.value }))}
-                                  className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate/70"
+                                  className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
                                   style={{
                                     borderColor: `${activeTheme.accent}55`,
                                     color: activeTheme.textColor,
@@ -1288,7 +2127,7 @@ const Dashboard = () => {
                                   placeholder="Phone number"
                                   value={publicContactForm.phone}
                                   onChange={(e) => setPublicContactForm((prev) => ({ ...prev, phone: e.target.value }))}
-                                  className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate/70"
+                                  className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
                                   style={{
                                     borderColor: `${activeTheme.accent}55`,
                                     color: activeTheme.textColor,
@@ -1320,8 +2159,50 @@ const Dashboard = () => {
           )}
 
           {activeTab === 'contacts' && (
-            <div className="space-y-3 rounded-2xl border border-brand-slate/10 bg-white p-5">
-              <h2 className="text-lg font-semibold text-brand-charcoal">Recent contacts</h2>
+            <div className="space-y-4 rounded-2xl border border-brand-slate/10 bg-white p-5">
+              <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+                <h2 className="text-lg font-semibold text-brand-charcoal">Contacts</h2>
+                <div className="flex flex-wrap gap-2">
+                  <button
+                    type="button"
+                    onClick={() => exportContactsCsv(filteredContactLeads)}
+                    disabled={!filteredContactLeads.length}
+                    className="inline-flex items-center rounded-lg border border-brand-slate/20 px-3 py-2 text-xs font-semibold text-brand-charcoal hover:bg-brand-slate/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Export CSV (Excel)
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => exportContactsVcf(filteredContactLeads)}
+                    disabled={!filteredContactLeads.length}
+                    className="inline-flex items-center rounded-lg border border-brand-slate/20 px-3 py-2 text-xs font-semibold text-brand-charcoal hover:bg-brand-slate/5 disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    Export vCard
+                  </button>
+                </div>
+              </div>
+
+              <div className="grid gap-2 md:grid-cols-[1fr_220px]">
+                <input
+                  value={contactSearch}
+                  onChange={(e) => setContactSearch(e.target.value)}
+                  placeholder="Search contacts, email, phone, notes..."
+                  className="h-11 rounded-xl border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
+                />
+                <select
+                  value={contactFilterTag}
+                  onChange={(e) => setContactFilterTag(e.target.value)}
+                  className="h-11 rounded-xl border border-brand-slate/20 bg-white px-3 text-sm text-brand-charcoal outline-none focus:border-brand-green/60"
+                >
+                  <option value="all">All Categories</option>
+                  {CONTACT_TAG_OPTIONS.map((option) => (
+                    <option key={option.value} value={option.value}>
+                      {option.label}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
               {contactsError && (
                 <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
                   {contactsError}
@@ -1332,30 +2213,83 @@ const Dashboard = () => {
                   Loading contacts...
                 </div>
               )}
-              {!contactsLoading && contactLeads.length === 0 && (
+              {!contactsLoading && filteredContactLeads.length === 0 && (
                 <div className="rounded-xl border border-brand-slate/10 bg-white px-4 py-3 text-sm text-brand-slate">
-                  No contacts yet from your public profile form.
+                  No contacts found for this search/filter.
                 </div>
               )}
-              {!contactsLoading &&
-                contactLeads.map((contact) => (
-                  <button
-                    key={contact.id}
-                    type="button"
-                    onClick={() => downloadContactVCard(contact)}
-                    className="flex w-full items-center justify-between rounded-xl border border-brand-slate/10 p-4 text-left transition hover:border-brand-green/40 hover:bg-brand-green/5"
-                    title="Save to phone contacts"
-                  >
-                    <div>
-                      <p className="font-medium text-brand-charcoal">{contact.name}</p>
-                      <p className="text-sm text-brand-slate/70">{contact.source}</p>
-                      {contact.email && <p className="text-xs text-brand-slate/60">{contact.email}</p>}
-                      {contact.phone && <p className="text-xs text-brand-slate/60">{contact.phone}</p>}
-                      <p className="mt-1 text-[11px] font-medium text-brand-green">Tap to save contact</p>
-                    </div>
-                    <span className="text-sm text-brand-slate/60">{contact.date}</span>
-                  </button>
-                ))}
+
+              {!contactsLoading && filteredContactLeads.length > 0 && (
+                <div className="overflow-x-auto rounded-xl border border-brand-slate/10">
+                  <table className="min-w-[900px] w-full text-left text-sm">
+                    <thead className="bg-brand-slate/5 text-xs uppercase tracking-[0.08em] text-brand-slate/70">
+                      <tr>
+                        <th className="px-4 py-3">Contacts</th>
+                        <th className="px-4 py-3">Tag</th>
+                        <th className="px-4 py-3">Note</th>
+                        <th className="px-4 py-3">Date</th>
+                        <th className="px-4 py-3 text-right">Delete</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredContactLeads.map((contact) => {
+                        const isBusy = contactActionId === contact.id
+                        const noteValue = contactNoteDrafts[contact.id] ?? ''
+                        return (
+                          <tr key={contact.id} className="border-t border-brand-slate/10 align-top">
+                            <td className="px-4 py-3">
+                              <p className="font-semibold text-brand-charcoal">{contact.name}</p>
+                              <p className="text-xs text-brand-slate/65">{contact.email || 'No email'}</p>
+                              <p className="text-xs text-brand-slate/65">{contact.phone || 'No phone'}</p>
+                            </td>
+                            <td className="px-4 py-3">
+                              <select
+                                value={contact.tag || 'new'}
+                                onChange={(e) => updateContactTag(contact.id, e.target.value)}
+                                disabled={isBusy}
+                                className="h-9 w-full rounded-lg border border-brand-slate/20 bg-white px-2.5 text-xs text-brand-charcoal outline-none focus:border-brand-green/60 disabled:opacity-60"
+                              >
+                                {CONTACT_TAG_OPTIONS.map((option) => (
+                                  <option key={option.value} value={option.value}>
+                                    {option.label}
+                                  </option>
+                                ))}
+                              </select>
+                            </td>
+                            <td className="px-4 py-3">
+                              <textarea
+                                value={noteValue}
+                                onChange={(e) =>
+                                  setContactNoteDrafts((prev) => ({
+                                    ...prev,
+                                    [contact.id]: e.target.value,
+                                  }))
+                                }
+                                onBlur={() => saveContactNote(contact.id)}
+                                rows={2}
+                                placeholder="Add note..."
+                                className="w-full rounded-lg border border-brand-slate/20 px-2.5 py-2 text-xs outline-none focus:border-brand-green/60"
+                              />
+                            </td>
+                            <td className="px-4 py-3 text-xs text-brand-slate/70">{contact.date || '-'}</td>
+                            <td className="px-4 py-3 text-right">
+                              <button
+                                type="button"
+                                onClick={() => deleteContactLead(contact.id)}
+                                disabled={isBusy}
+                                className="inline-flex items-center gap-1 rounded-lg border border-red-200 px-2.5 py-1.5 text-xs font-medium text-red-600 hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50"
+                              >
+                                <Trash2 className="h-3.5 w-3.5" />
+                                Delete
+                              </button>
+                            </td>
+                          </tr>
+                        )
+                      })}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
           )}
 
@@ -1364,27 +2298,28 @@ const Dashboard = () => {
               <div className="grid gap-3 rounded-2xl border border-brand-slate/10 bg-white p-4 md:grid-cols-2">
                 <div className="rounded-xl border border-brand-slate/10 p-3">
                   <p className="text-sm font-semibold text-brand-charcoal">Upload from device</p>
-                  <p className="mt-1 text-xs text-brand-slate/70">Add one or multiple images to your lookbook.</p>
+                  <p className="mt-1 text-xs text-brand-slate/70">Add one or multiple images to your portfolio.</p>
                   <label className="mt-3 inline-flex cursor-pointer items-center gap-2 rounded-lg bg-brand-green px-3 py-2 text-sm font-semibold text-white hover:bg-[#489b2d]">
                     <ImagePlus className="h-4 w-4" />
-                    Upload images
+                    {portfolioUploadSaving ? 'Uploading...' : 'Upload images'}
                     <input type="file" accept="image/*" multiple className="hidden" onChange={handleLookbookUpload} />
                   </label>
                 </div>
 
                 <div className="rounded-xl border border-brand-slate/10 p-3">
                   <p className="text-sm font-semibold text-brand-charcoal">Import from social link</p>
-                  <p className="mt-1 text-xs text-brand-slate/70">Frontend demo: paste your page URL to preview pulled images.</p>
+                  <p className="mt-1 text-xs text-brand-slate/70">Paste an Instagram/X/YouTube post link to show a live preview on your profile.</p>
                   <div className="mt-3 flex gap-2">
                     <input
                       value={socialLink}
                       onChange={(e) => setSocialLink(e.target.value)}
-                      placeholder="https://instagram.com/yourpage"
+                      placeholder="https://instagram.com/p/... or https://x.com/.../status/..."
                       className="h-10 min-w-0 flex-1 rounded-lg border border-brand-slate/20 px-3 text-sm outline-none focus:border-brand-green/60"
                     />
                     <button
                       type="button"
                       onClick={importFromSocial}
+                      disabled={socialLoading}
                       className="inline-flex h-10 items-center gap-1 rounded-lg border border-brand-slate/20 px-3 text-sm font-medium text-brand-charcoal hover:bg-brand-slate/5"
                     >
                       <Link2 className="h-4 w-4" />
@@ -1394,13 +2329,56 @@ const Dashboard = () => {
                 </div>
               </div>
 
-              <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {lookbookGallery.map((item, index) => (
-                  <div key={`${item.name}-${index}`} className="overflow-hidden rounded-2xl border border-brand-slate/10 bg-white">
-                    <img src={item.image} alt={item.name} className="h-44 w-full object-cover" />
-                    <div className="p-4">
-                      <p className="font-semibold text-brand-charcoal">{item.name}</p>
-                    </div>
+              {portfolioError && (
+                <div className="rounded-xl border border-red-300 bg-red-50 px-4 py-3 text-sm text-red-700">
+                  {portfolioError}
+                </div>
+              )}
+
+              <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-4">
+                {portfolioLoading && (
+                  <div className="rounded-xl border border-brand-slate/10 bg-white px-4 py-3 text-sm text-brand-slate">
+                    Loading portfolio...
+                  </div>
+                )}
+
+                {!portfolioLoading && portfolioItems.length === 0 && (
+                  <div className="rounded-xl border border-brand-slate/10 bg-white px-4 py-3 text-sm text-brand-slate">
+                    No portfolio items yet. Upload an image or import a social link.
+                  </div>
+                )}
+
+                {!portfolioLoading &&
+                  portfolioItems.map((item) => (
+                  <div key={item.id} className="relative overflow-hidden rounded-2xl border border-brand-slate/10 bg-white">
+                    {item.image_url ? (
+                      <img src={item.image_url} alt={item.title || 'Portfolio'} className="h-44 w-full object-cover" />
+                    ) : item.embed_html ? (
+                      <div className="h-64 w-full bg-brand-slate/5 p-2" dangerouslySetInnerHTML={{ __html: item.embed_html }} />
+                    ) : (
+                      <div className="flex h-44 items-center justify-center bg-brand-slate/5 px-4 text-center text-xs text-brand-slate/80">
+                        Preview unavailable for this link type.
+                      </div>
+                    )}
+                    {item.source_url && (
+                      <a
+                        href={item.source_url}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="absolute bottom-2 left-2 right-2 truncate rounded-md bg-black/65 px-2 py-1 text-xs text-white hover:bg-black/75"
+                      >
+                        {item.source_url}
+                      </a>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => deletePortfolioItem(item.id)}
+                      disabled={portfolioActionId === item.id}
+                      className="absolute right-2 top-2 inline-flex items-center gap-1 rounded-md bg-red-600/90 px-2 py-1 text-xs font-medium text-white hover:bg-red-700 disabled:opacity-50"
+                    >
+                      <Trash2 className="h-3.5 w-3.5" />
+                      {portfolioActionId === item.id ? 'Deleting...' : 'Delete'}
+                    </button>
                   </div>
                 ))}
               </div>
