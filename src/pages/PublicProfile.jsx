@@ -148,6 +148,16 @@ const PublicProfile = () => {
   const [connectError, setConnectError] = useState('')
   const [portfolioIndex, setPortfolioIndex] = useState(0)
 
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+
+  const resolveMediaUrl = (value = '') => {
+    const raw = (value || '').trim()
+    if (!raw) return ''
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('blob:')) return raw
+    if (raw.startsWith('/')) return `${apiBaseUrl}${raw}`
+    return `${apiBaseUrl}/${raw}`
+  }
+
   const activeTheme = useMemo(() => {
     const selected = profile?.selected_theme || 'minimal-light'
     return THEME_PRESETS.find((theme) => theme.key === selected) || THEME_PRESETS[0]
@@ -173,6 +183,13 @@ const PublicProfile = () => {
   }, [profile])
 
   const activePortfolioItem = portfolioItems[portfolioIndex] || null
+  const portfolioTitleBadge = useMemo(() => {
+    const raw = (activePortfolioItem?.title || '').trim()
+    if (!raw) return ''
+    // Hide the default backend label used for imports.
+    if (raw.toLowerCase() === 'imported from source') return ''
+    return raw
+  }, [activePortfolioItem?.title])
 
   useEffect(() => {
     setPortfolioIndex(0)
@@ -210,7 +227,6 @@ const PublicProfile = () => {
       setError('')
 
       try {
-        const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
         const response = await fetch(`${apiBaseUrl}/api/public/profile/?id=${encodeURIComponent(profileId)}`)
         const data = await response.json()
 
@@ -253,7 +269,6 @@ const PublicProfile = () => {
     setConnectError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const response = await fetch(`${apiBaseUrl}/api/public/contacts/`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -286,7 +301,6 @@ const PublicProfile = () => {
   const trackPublicClick = (linkId) => {
     if (!profile?.username || !linkId) return
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
     fetch(`${apiBaseUrl}/api/public/track/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -331,7 +345,11 @@ const PublicProfile = () => {
             >
               <div className="h-screen overflow-y-auto scrollbar-hide sm:h-screen">
               {profile.hero_image_url ? (
-                <img src={profile.hero_image_url} alt="Hero" className="h-36 w-full object-cover sm:h-48" />
+                <img
+                  src={resolveMediaUrl(profile.hero_image_url)}
+                  alt="Hero"
+                  className="h-36 w-full object-cover sm:h-48"
+                />
               ) : (
                 <div className="h-36 w-full bg-brand-slate/10 sm:h-48" />
               )}
@@ -339,7 +357,11 @@ const PublicProfile = () => {
               <div className="-mt-9 px-2 pb-5 sm:-mt-10">
                 <div className="inline-flex rounded-full border-4" style={{ borderColor: activeTheme.pageBg }}>
                   {profile.profile_image_url ? (
-                    <img src={profile.profile_image_url} alt="Profile preview" className="h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20" />
+                    <img
+                      src={resolveMediaUrl(profile.profile_image_url)}
+                      alt="Profile preview"
+                      className="h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20"
+                    />
                   ) : (
                     <div className="h-16 w-16 rounded-full bg-brand-slate/15 sm:h-20 sm:w-20" />
                   )}
@@ -408,8 +430,8 @@ const PublicProfile = () => {
                           <div className="relative overflow-hidden rounded-2xl border border-brand-slate/15" style={{ boxShadow: '0 10px 24px rgba(0,0,0,0.14)' }}>
                             {activePortfolioItem.image_url ? (
                               <img
-                                src={activePortfolioItem.image_url}
-                                alt={activePortfolioItem.title || 'Lookbook image'}
+                                src={resolveMediaUrl(activePortfolioItem.image_url)}
+                                alt={portfolioTitleBadge || 'Lookbook image'}
                                 className="h-56 w-full object-cover sm:h-64"
                               />
                             ) : (
@@ -419,9 +441,9 @@ const PublicProfile = () => {
                               />
                             )}
 
-                            {activePortfolioItem.title && (
+                            {portfolioTitleBadge && (
                               <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white">
-                                {activePortfolioItem.title}
+                                {portfolioTitleBadge}
                               </div>
                             )}
 

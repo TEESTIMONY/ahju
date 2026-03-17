@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import {
+  Bar,
+  BarChart,
   CartesianGrid,
-  Line,
-  LineChart,
   Legend,
   ResponsiveContainer,
   Tooltip,
@@ -526,6 +526,16 @@ const Dashboard = () => {
     if (!trimmed) return ''
     if (/^https?:\/\//i.test(trimmed)) return trimmed
     return `https://${trimmed}`
+  }
+
+  const resolveMediaUrl = (value = '') => {
+    const raw = (value || '').trim()
+    if (!raw) return ''
+    if (/^https?:\/\//i.test(raw) || raw.startsWith('blob:')) return raw
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+    if (raw.startsWith('/')) return `${apiBaseUrl}${raw}`
+    return `${apiBaseUrl}/${raw}`
   }
 
   function getSocialMeta(title = '', url = '') {
@@ -1144,6 +1154,9 @@ const Dashboard = () => {
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
       const formData = new FormData()
       formData.append('image', file)
+      // Backend expects a "target" field to know whether to update profile or hero.
+      // If omitted, backend defaults to "profile".
+      formData.append('target', type === 'heroImage' ? 'hero' : 'profile')
 
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/appearance/`, {
         method: 'POST',
@@ -1594,7 +1607,7 @@ const Dashboard = () => {
 
                 <div className="h-56 sm:h-72">
                   <ResponsiveContainer width="100%" height="100%">
-                    <LineChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
+                    <BarChart data={chartData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
                       <CartesianGrid strokeDasharray="4 4" stroke="#e6eaec" />
                       <XAxis
                         dataKey="day"
@@ -1622,34 +1635,10 @@ const Dashboard = () => {
                         }}
                       />
                       <Legend wrapperStyle={{ fontSize: '12px' }} />
-                      <Line
-                        type="monotone"
-                        dataKey="views"
-                        name="Views"
-                        stroke="#348539"
-                        strokeWidth={3}
-                        dot={{ r: 3 }}
-                        activeDot={{ r: 5 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="clicks"
-                        name="Clicks"
-                        stroke="#28241E"
-                        strokeWidth={3}
-                        dot={{ r: 3 }}
-                        activeDot={{ r: 5 }}
-                      />
-                      <Line
-                        type="monotone"
-                        dataKey="cardTaps"
-                        name="Card Taps"
-                        stroke="#3b82f6"
-                        strokeWidth={3}
-                        dot={{ r: 3 }}
-                        activeDot={{ r: 5 }}
-                      />
-                    </LineChart>
+                      <Bar dataKey="views" name="Views" fill="#348539" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="clicks" name="Clicks" fill="#28241E" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="cardTaps" name="Card Taps" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                    </BarChart>
                   </ResponsiveContainer>
                 </div>
               </div>
@@ -2439,7 +2428,11 @@ const Dashboard = () => {
                   portfolioItems.map((item) => (
                   <div key={item.id} className="relative overflow-hidden rounded-2xl border border-brand-slate/10 bg-white">
                     {item.image_url ? (
-                      <img src={item.image_url} alt={item.title || 'Portfolio'} className="h-44 w-full object-cover" />
+                      <img
+                        src={resolveMediaUrl(item.image_url)}
+                        alt={item.title || 'Portfolio'}
+                        className="h-44 w-full object-cover"
+                      />
                     ) : item.embed_html ? (
                       <div className="h-64 w-full bg-brand-slate/5 p-2" dangerouslySetInnerHTML={{ __html: item.embed_html }} />
                     ) : (
@@ -2570,7 +2563,7 @@ const Dashboard = () => {
                         isSelected ? 'border-brand-green ring-2 ring-brand-green/30' : 'border-brand-slate/15'
                       }`}
                     >
-                      <img src={imageUrl} alt="Preview" className="h-36 w-full object-cover" />
+                        <img src={resolveMediaUrl(imageUrl)} alt="Preview" className="h-36 w-full object-cover" />
                       <span
                         className={`absolute right-2 top-2 inline-flex h-6 w-6 items-center justify-center rounded-full border text-xs font-bold ${
                           isSelected
