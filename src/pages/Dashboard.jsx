@@ -139,13 +139,13 @@ const SOCIAL_PRESET_LINKS = [
 ]
 
 const emptyChartData = [
-  { day: 'Mon', views: 0, clicks: 0, cardTaps: 0 },
-  { day: 'Tue', views: 0, clicks: 0, cardTaps: 0 },
-  { day: 'Wed', views: 0, clicks: 0, cardTaps: 0 },
-  { day: 'Thu', views: 0, clicks: 0, cardTaps: 0 },
-  { day: 'Fri', views: 0, clicks: 0, cardTaps: 0 },
-  { day: 'Sat', views: 0, clicks: 0, cardTaps: 0 },
-  { day: 'Sun', views: 0, clicks: 0, cardTaps: 0 },
+  { day: 'Mon', views: 0, clicks: 0, leads: 0 },
+  { day: 'Tue', views: 0, clicks: 0, leads: 0 },
+  { day: 'Wed', views: 0, clicks: 0, leads: 0 },
+  { day: 'Thu', views: 0, clicks: 0, leads: 0 },
+  { day: 'Fri', views: 0, clicks: 0, leads: 0 },
+  { day: 'Sat', views: 0, clicks: 0, leads: 0 },
+  { day: 'Sun', views: 0, clicks: 0, leads: 0 },
 ]
 
 const dashboardLogo = new URL('../../logo.jpg', import.meta.url).href
@@ -246,7 +246,7 @@ const CONTACT_TAG_OPTIONS = [
   { value: 'closed', label: 'Closed' },
   { value: 'lost', label: 'Lost' },
 ]
-const CONTACT_TAG_CYCLE = ['new', 'follow_up', 'contacted', 'closed', 'lost']
+const CONTACT_TAG_CYCLE = ['new', 'follow_up', 'lost']
 
 let refreshPromise = null
 
@@ -265,7 +265,7 @@ const Dashboard = () => {
   const [summary, setSummary] = useState({
     total_views: 0,
     total_clicks: 0,
-    total_card_taps: 0,
+    total_leads: 0,
     ctr: 0,
   })
   const [isSidebarOpen, setIsSidebarOpen] = useState(false)
@@ -337,7 +337,8 @@ const Dashboard = () => {
 
   const totalViews = useMemo(() => summary.total_views || 0, [summary])
   const totalClicks = useMemo(() => summary.total_clicks || 0, [summary])
-  const totalCardTaps = useMemo(() => summary.total_card_taps || 0, [summary])
+  // Leads should reflect actual contacts gained from public profile form submissions.
+  const totalLeads = useMemo(() => contactLeads.length || 0, [contactLeads])
 
   const { socialPreviewLinks, ordinaryPreviewLinks } = useMemo(() => {
     const activeLinks = links.filter((link) => link.active)
@@ -370,9 +371,9 @@ const Dashboard = () => {
   }
 
   const getContactTagPillClasses = (tagValue = 'new') => {
-    if (tagValue === 'new') return 'bg-blue-100 text-blue-700'
-    if (tagValue === 'follow_up') return 'bg-amber-100 text-amber-700'
-    if (tagValue === 'lost') return 'bg-slate-200 text-slate-700'
+    if (tagValue === 'new') return 'bg-sky-100 text-sky-700 font-semibold'
+    if (tagValue === 'follow_up') return 'bg-amber-100 text-amber-700 font-semibold'
+    if (tagValue === 'lost') return 'bg-slate-100 text-slate-800 font-semibold'
     if (tagValue === 'closed') return 'bg-emerald-100 text-emerald-700'
     if (tagValue === 'contacted') return 'bg-violet-100 text-violet-700'
     return 'bg-brand-green/10 text-brand-green'
@@ -533,7 +534,7 @@ const Dashboard = () => {
     if (!raw) return ''
     if (/^https?:\/\//i.test(raw) || raw.startsWith('blob:')) return raw
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
     if (raw.startsWith('/')) return `${apiBaseUrl}${raw}`
     return `${apiBaseUrl}/${raw}`
   }
@@ -577,7 +578,7 @@ const Dashboard = () => {
   const getValidAccessToken = async () => {
     const accessToken = localStorage.getItem('ahju_access_token')
     const refreshToken = localStorage.getItem('ahju_refresh_token')
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
 
     if (!accessToken && !refreshToken) return null
     if (accessToken) return accessToken
@@ -599,7 +600,7 @@ const Dashboard = () => {
   }
 
   const authorizedFetch = async (url, options = {}) => {
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
     const token = await getValidAccessToken()
     if (!token) throw new Error('Session expired. Please log in again.')
 
@@ -668,7 +669,7 @@ const Dashboard = () => {
       return
     }
 
-    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
 
     const loadAnalytics = async () => {
       setAnalyticsLoading(true)
@@ -716,7 +717,14 @@ const Dashboard = () => {
         }
 
         setSummary(summaryData)
-        setChartData(Array.isArray(timeseriesData?.data) ? timeseriesData.data : emptyChartData)
+        setChartData(
+          Array.isArray(timeseriesData?.data)
+            ? timeseriesData.data.map((point) => ({
+                ...point,
+                leads: point?.leads ?? point?.cardTaps ?? 0,
+              }))
+            : emptyChartData,
+        )
         setLinks(Array.isArray(linksData) ? linksData.map(mapApiLinkToUi) : [])
         const mappedContacts = Array.isArray(contactsData) ? contactsData.map(mapApiContactToUi) : []
         setContactLeads(mappedContacts)
@@ -739,7 +747,7 @@ const Dashboard = () => {
         setLinksError(err.message || 'Unable to load links')
         setContactsError(err.message || 'Unable to load contacts')
         setPortfolioError(err.message || 'Unable to load portfolio')
-        setSummary({ total_views: 0, total_clicks: 0, total_card_taps: 0, ctr: 0 })
+        setSummary({ total_views: 0, total_clicks: 0, total_leads: 0, ctr: 0 })
         setChartData(emptyChartData)
         setLinks([])
         setContactLeads([])
@@ -755,6 +763,48 @@ const Dashboard = () => {
     loadAnalytics()
   }, [])
 
+  // Keep contacts/leads fresh so new public-profile submissions reflect on dashboard.
+  useEffect(() => {
+    const accessToken = localStorage.getItem('ahju_access_token')
+    const refreshToken = localStorage.getItem('ahju_refresh_token')
+    if (!accessToken && !refreshToken) return undefined
+
+    const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
+
+    const refreshContacts = async () => {
+      try {
+        const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/`)
+        if (!response.ok) return
+
+        const contactsData = await response.json().catch(() => [])
+        const mappedContacts = Array.isArray(contactsData) ? contactsData.map(mapApiContactToUi) : []
+        setContactLeads(mappedContacts)
+        setContactNoteDrafts((prev) => {
+          const next = { ...prev }
+          mappedContacts.forEach((contact) => {
+            if (!(contact.id in next)) next[contact.id] = contact.note || ''
+          })
+          Object.keys(next).forEach((id) => {
+            if (!mappedContacts.some((contact) => String(contact.id) === String(id))) {
+              delete next[id]
+            }
+          })
+          return next
+        })
+      } catch {
+        // silently ignore background refresh issues
+      }
+    }
+
+    const intervalId = window.setInterval(refreshContacts, 20000)
+    window.addEventListener('focus', refreshContacts)
+
+    return () => {
+      window.clearInterval(intervalId)
+      window.removeEventListener('focus', refreshContacts)
+    }
+  }, [])
+
   const addLink = async (e) => {
     e.preventDefault()
     if (!newLink.title.trim() || !newLink.url.trim()) return
@@ -762,7 +812,7 @@ const Dashboard = () => {
     setLinksSaving(true)
     setLinksError('')
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/`, {
         method: 'POST',
         headers: {
@@ -802,7 +852,7 @@ const Dashboard = () => {
     setPresetSavingKey(preset.key)
     setLinksError('')
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/`, {
         method: 'POST',
         headers: {
@@ -841,7 +891,7 @@ const Dashboard = () => {
     setLinks((prev) => prev.filter((link) => link.id !== id))
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/${id}/`, {
         method: 'DELETE',
       })
@@ -867,7 +917,7 @@ const Dashboard = () => {
     setLinks((prev) => prev.map((link) => (link.id === id ? { ...link, active: nextActive } : link)))
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/${id}/`, {
         method: 'PATCH',
         headers: {
@@ -927,7 +977,7 @@ const Dashboard = () => {
     setLinksError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/links/${id}/`, {
         method: 'PATCH',
         headers: {
@@ -976,7 +1026,7 @@ const Dashboard = () => {
     if (files.length <= 10) setPortfolioError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const created = []
 
       for (const file of filesToUpload) {
@@ -1009,7 +1059,7 @@ const Dashboard = () => {
     setSocialLoading(true)
     setPortfolioError('')
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const normalizedLink = normalizeLinkUrl(socialLink)
       const maxImages = 10
 
@@ -1080,7 +1130,7 @@ const Dashboard = () => {
     setImportSaving(true)
     setPortfolioError('')
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/import-images/`, {
         method: 'POST',
         headers: {
@@ -1124,7 +1174,7 @@ const Dashboard = () => {
     setPortfolioItems((prev) => prev.filter((item) => item.id !== itemId))
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/portfolio/${itemId}/`, {
         method: 'DELETE',
       })
@@ -1151,7 +1201,7 @@ const Dashboard = () => {
     setAppearanceError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const formData = new FormData()
       formData.append('image', file)
       // Backend expects a "target" field to know whether to update profile or hero.
@@ -1210,7 +1260,7 @@ const Dashboard = () => {
     )
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/${contactId}/`, {
         method: 'PATCH',
         headers: {
@@ -1238,6 +1288,7 @@ const Dashboard = () => {
       setContactsError(err.message || 'Could not update contact tag')
     } finally {
       setContactActionId(null)
+      setExpandedContactNotes((prev) => ({ ...prev, [contactId]: false }))
     }
   }
 
@@ -1255,7 +1306,7 @@ const Dashboard = () => {
     )
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/${contactId}/`, {
         method: 'PATCH',
         headers: {
@@ -1297,7 +1348,7 @@ const Dashboard = () => {
     setContactLeads((prev) => prev.filter((contact) => contact.id !== contactId))
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/contacts/${contactId}/`, {
         method: 'DELETE',
       })
@@ -1333,7 +1384,7 @@ const Dashboard = () => {
     setAppearanceSaved(false)
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const payload = {
         display_name: appearance.displayName,
         short_bio: appearance.shortBio,
@@ -1407,7 +1458,7 @@ const Dashboard = () => {
     setUsernameError('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await authorizedFetch(`${apiBaseUrl}/api/users/set-username/`, {
         method: 'POST',
         headers: {
@@ -1578,8 +1629,8 @@ const Dashboard = () => {
                   <p className="mt-1 text-3xl font-bold text-brand-charcoal">{totalClicks}</p>
                 </div>
                 <div className="min-w-[170px] rounded-2xl border border-brand-slate/10 bg-white p-4 md:min-w-0 md:p-5">
-                  <p className="text-sm text-brand-slate/70">Card Taps</p>
-                  <p className="mt-1 text-3xl font-bold text-brand-charcoal">{totalCardTaps}</p>
+                  <p className="text-sm text-brand-slate/70">Leads</p>
+                  <p className="mt-1 text-3xl font-bold text-brand-charcoal">{totalLeads}</p>
                 </div>
                 <div className="min-w-[170px] rounded-2xl border border-brand-slate/10 bg-white p-4 md:min-w-0 md:p-5">
                   <p className="text-sm text-brand-slate/70">CTR</p>
@@ -1597,11 +1648,11 @@ const Dashboard = () => {
 
               <div className="rounded-2xl border border-brand-slate/10 bg-white p-4 md:p-6">
                 <div className="mb-4 flex items-center justify-between">
-                  <h2 className="text-lg font-semibold text-brand-charcoal">Views & Clicks (7 days)</h2>
+                  <h2 className="text-lg font-semibold text-brand-charcoal">Views, Clicks & Leads (7 days)</h2>
                   <div className="hidden items-center gap-2 sm:flex">
                     <span className="rounded-full bg-brand-green/10 px-2.5 py-1 text-xs font-medium text-brand-green">Views</span>
                     <span className="rounded-full bg-brand-slate/10 px-2.5 py-1 text-xs font-medium text-brand-slate">Clicks</span>
-                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">Card Taps</span>
+                    <span className="rounded-full bg-blue-100 px-2.5 py-1 text-xs font-medium text-blue-700">Leads</span>
                   </div>
                 </div>
 
@@ -1637,7 +1688,7 @@ const Dashboard = () => {
                       <Legend wrapperStyle={{ fontSize: '12px' }} />
                       <Bar dataKey="views" name="Views" fill="#348539" radius={[6, 6, 0, 0]} />
                       <Bar dataKey="clicks" name="Clicks" fill="#28241E" radius={[6, 6, 0, 0]} />
-                      <Bar dataKey="cardTaps" name="Card Taps" fill="#3b82f6" radius={[6, 6, 0, 0]} />
+                      <Bar dataKey="leads" name="Leads" fill="#3b82f6" radius={[6, 6, 0, 0]} />
                     </BarChart>
                   </ResponsiveContainer>
                 </div>

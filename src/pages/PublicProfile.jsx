@@ -146,9 +146,11 @@ const PublicProfile = () => {
   const [publicContactForm, setPublicContactForm] = useState({ name: '', email: '', phone: '', whereWeMet: '' })
   const [connectSaved, setConnectSaved] = useState(false)
   const [connectError, setConnectError] = useState('')
+  const [profileTab, setProfileTab] = useState('contact')
   const [portfolioIndex, setPortfolioIndex] = useState(0)
+  const [lightboxImage, setLightboxImage] = useState('')
 
-  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+  const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
 
   const resolveMediaUrl = (value = '') => {
     const raw = (value || '').trim()
@@ -194,6 +196,14 @@ const PublicProfile = () => {
   useEffect(() => {
     setPortfolioIndex(0)
   }, [profile?.username, portfolioItems.length])
+
+  useEffect(() => {
+    setProfileTab('contact')
+  }, [profile?.username])
+
+  useEffect(() => {
+    setLightboxImage('')
+  }, [profile?.username])
 
   const goToNextPortfolio = () => {
     if (!portfolioItems.length) return
@@ -422,79 +432,6 @@ const PublicProfile = () => {
                         </div>
                       )}
 
-                      {activePortfolioItem && (
-                        <div className="mt-3">
-                          <p className="mb-2 text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
-                            Lookbook
-                          </p>
-                          <div className="relative overflow-hidden rounded-2xl border border-brand-slate/15" style={{ boxShadow: '0 10px 24px rgba(0,0,0,0.14)' }}>
-                            {activePortfolioItem.image_url ? (
-                              <img
-                                src={resolveMediaUrl(activePortfolioItem.image_url)}
-                                alt={portfolioTitleBadge || 'Lookbook image'}
-                                className="h-56 w-full object-cover sm:h-64"
-                              />
-                            ) : (
-                              <div
-                                className="h-56 w-full bg-brand-slate/5 sm:h-64"
-                                dangerouslySetInnerHTML={{ __html: activePortfolioItem.embed_html }}
-                              />
-                            )}
-
-                            {portfolioTitleBadge && (
-                              <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white">
-                                {portfolioTitleBadge}
-                              </div>
-                            )}
-
-                            {activePortfolioItem.source_url && (
-                              <a
-                                href={activePortfolioItem.source_url}
-                                target="_blank"
-                                rel="noreferrer"
-                                className="absolute bottom-2 left-2 inline-flex max-w-[85%] items-center gap-1 rounded-full border border-white/20 bg-black/70 px-3 py-1.5 text-xs font-semibold text-white shadow-md backdrop-blur hover:bg-black/80"
-                              >
-                                <Link2 className="h-3.5 w-3.5" />
-                                <span className="truncate">Open link</span>
-                              </a>
-                            )}
-
-                            {portfolioItems.length > 1 && (
-                              <>
-                                <button
-                                  type="button"
-                                  onClick={goToPrevPortfolio}
-                                  className="absolute left-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-md hover:bg-black/70"
-                                  aria-label="Previous lookbook image"
-                                >
-                                  <ChevronLeft className="h-4 w-4" />
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={goToNextPortfolio}
-                                  className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-md hover:bg-black/70"
-                                  aria-label="Next lookbook image"
-                                >
-                                  <ChevronRight className="h-4 w-4" />
-                                </button>
-
-                                <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/45 px-2 py-1">
-                                  {portfolioItems.map((item, idx) => (
-                                    <button
-                                      key={`${item.image_url || item.source_url || 'item'}-${idx}`}
-                                      type="button"
-                                      onClick={() => setPortfolioIndex(idx)}
-                                      className={`h-1.5 rounded-full transition-all ${idx === portfolioIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/60'}`}
-                                      aria-label={`Go to lookbook image ${idx + 1}`}
-                                    />
-                                  ))}
-                                </div>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      )}
-
                       {ordinaryLinks.length > 0 && (
                         <div className="space-y-2">
                           <p className="text-[11px] font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
@@ -524,63 +461,183 @@ const PublicProfile = () => {
                       )}
 
                       <div className="rounded-xl border p-3" style={{ borderColor: `${activeTheme.accent}66` }}>
-                        <p className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
-                          Connect with me
-                        </p>
-                        <form className="mt-2 space-y-2" onSubmit={submitPublicContact}>
-                          <input
-                            placeholder="Your name"
-                            value={publicContactForm.name}
-                            onChange={(e) => setPublicContactForm((prev) => ({ ...prev, name: e.target.value }))}
-                            className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
-                            style={{
-                              borderColor: `${activeTheme.accent}55`,
-                              color: activeTheme.textColor,
-                              backgroundColor: activeTheme.cardBg,
-                            }}
-                          />
-                          <input
-                            placeholder="Email"
-                            type="email"
-                            value={publicContactForm.email}
-                            onChange={(e) => setPublicContactForm((prev) => ({ ...prev, email: e.target.value }))}
-                            className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
-                            style={{
-                              borderColor: `${activeTheme.accent}55`,
-                              color: activeTheme.textColor,
-                              backgroundColor: activeTheme.cardBg,
-                            }}
-                          />
-                          <input
-                            placeholder="Phone number"
-                            value={publicContactForm.phone}
-                            onChange={(e) => setPublicContactForm((prev) => ({ ...prev, phone: e.target.value }))}
-                            className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
-                            style={{
-                              borderColor: `${activeTheme.accent}55`,
-                              color: activeTheme.textColor,
-                              backgroundColor: activeTheme.cardBg,
-                            }}
-                          />
-                          <input
-                            placeholder="Where we met"
-                            value={publicContactForm.whereWeMet}
-                            onChange={(e) => setPublicContactForm((prev) => ({ ...prev, whereWeMet: e.target.value }))}
-                            className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
-                            style={{
-                              borderColor: `${activeTheme.accent}55`,
-                              color: activeTheme.textColor,
-                              backgroundColor: activeTheme.cardBg,
-                            }}
-                          />
+                        <div className="mb-2 flex gap-2">
                           <button
-                            type="submit"
-                            className="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white"
-                            style={{ backgroundColor: activeTheme.buttonBg }}
+                            type="button"
+                            onClick={() => setProfileTab('contact')}
+                            className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition"
+                            style={{
+                              color: profileTab === 'contact' ? '#ffffff' : activeTheme.textColor,
+                              backgroundColor:
+                                profileTab === 'contact' ? activeTheme.buttonBg : activeTheme.cardBg,
+                              borderColor:
+                                profileTab === 'contact'
+                                  ? activeTheme.buttonBg
+                                  : `${activeTheme.textColor}40`,
+                            }}
                           >
-                            Send details
+                            Contact form
                           </button>
-                        </form>
+                          <button
+                            type="button"
+                            onClick={() => setProfileTab('lookbook')}
+                            className="rounded-lg border px-3 py-1.5 text-xs font-semibold transition"
+                            style={{
+                              color: profileTab === 'lookbook' ? '#ffffff' : activeTheme.textColor,
+                              backgroundColor:
+                                profileTab === 'lookbook' ? activeTheme.buttonBg : activeTheme.cardBg,
+                              borderColor:
+                                profileTab === 'lookbook'
+                                  ? activeTheme.buttonBg
+                                  : `${activeTheme.textColor}40`,
+                            }}
+                          >
+                            Lookbook
+                          </button>
+                        </div>
+
+                        {profileTab === 'contact' ? (
+                          <>
+                            <p className="text-xs font-semibold uppercase tracking-[0.08em]" style={{ color: activeTheme.mutedText }}>
+                              Connect with me
+                            </p>
+                            <form className="mt-2 space-y-2" onSubmit={submitPublicContact}>
+                              <input
+                                placeholder="Your name"
+                                value={publicContactForm.name}
+                                onChange={(e) => setPublicContactForm((prev) => ({ ...prev, name: e.target.value }))}
+                                className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
+                                style={{
+                                  borderColor: `${activeTheme.accent}55`,
+                                  color: activeTheme.textColor,
+                                  backgroundColor: activeTheme.cardBg,
+                                }}
+                              />
+                              <input
+                                placeholder="Email"
+                                type="email"
+                                value={publicContactForm.email}
+                                onChange={(e) => setPublicContactForm((prev) => ({ ...prev, email: e.target.value }))}
+                                className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
+                                style={{
+                                  borderColor: `${activeTheme.accent}55`,
+                                  color: activeTheme.textColor,
+                                  backgroundColor: activeTheme.cardBg,
+                                }}
+                              />
+                              <input
+                                placeholder="Phone number"
+                                value={publicContactForm.phone}
+                                onChange={(e) => setPublicContactForm((prev) => ({ ...prev, phone: e.target.value }))}
+                                className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
+                                style={{
+                                  borderColor: `${activeTheme.accent}55`,
+                                  color: activeTheme.textColor,
+                                  backgroundColor: activeTheme.cardBg,
+                                }}
+                              />
+                              <input
+                                placeholder="Where we met"
+                                value={publicContactForm.whereWeMet}
+                                onChange={(e) => setPublicContactForm((prev) => ({ ...prev, whereWeMet: e.target.value }))}
+                                className="h-9 w-full rounded-lg border px-2 text-xs text-brand-charcoal placeholder:text-brand-slate"
+                                style={{
+                                  borderColor: `${activeTheme.accent}55`,
+                                  color: activeTheme.textColor,
+                                  backgroundColor: activeTheme.cardBg,
+                                }}
+                              />
+                              <button
+                                type="submit"
+                                className="w-full rounded-lg px-3 py-2 text-xs font-semibold text-white"
+                                style={{ backgroundColor: activeTheme.buttonBg }}
+                              >
+                                Send details
+                              </button>
+                            </form>
+                          </>
+                        ) : (
+                          <div className="mt-1">
+                            {activePortfolioItem ? (
+                              <div className="relative overflow-hidden rounded-2xl border border-brand-slate/15" style={{ boxShadow: '0 10px 24px rgba(0,0,0,0.14)' }}>
+                                {activePortfolioItem.image_url ? (
+                                  <button
+                                    type="button"
+                                    onClick={() => setLightboxImage(resolveMediaUrl(activePortfolioItem.image_url))}
+                                    className="block w-full"
+                                    aria-label="Open image preview"
+                                  >
+                                    <img
+                                      src={resolveMediaUrl(activePortfolioItem.image_url)}
+                                      alt={portfolioTitleBadge || 'Lookbook image'}
+                                      className="h-56 w-full cursor-zoom-in object-cover sm:h-64"
+                                    />
+                                  </button>
+                                ) : (
+                                  <div
+                                    className="h-56 w-full bg-brand-slate/5 sm:h-64"
+                                    dangerouslySetInnerHTML={{ __html: activePortfolioItem.embed_html }}
+                                  />
+                                )}
+
+                                {portfolioTitleBadge && (
+                                  <div className="absolute left-2 top-2 rounded-full bg-black/60 px-2.5 py-1 text-[11px] font-semibold text-white">
+                                    {portfolioTitleBadge}
+                                  </div>
+                                )}
+
+                                {activePortfolioItem.source_url && (
+                                  <a
+                                    href={activePortfolioItem.source_url}
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    className="absolute bottom-2 left-2 inline-flex max-w-[85%] items-center gap-1 rounded-full border border-white/20 bg-black/70 px-3 py-1.5 text-xs font-semibold text-white shadow-md backdrop-blur hover:bg-black/80"
+                                  >
+                                    <Link2 className="h-3.5 w-3.5" />
+                                    <span className="truncate">Open link</span>
+                                  </a>
+                                )}
+
+                                {portfolioItems.length > 1 && (
+                                  <>
+                                    <button
+                                      type="button"
+                                      onClick={goToPrevPortfolio}
+                                      className="absolute left-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-md hover:bg-black/70"
+                                      aria-label="Previous lookbook image"
+                                    >
+                                      <ChevronLeft className="h-4 w-4" />
+                                    </button>
+                                    <button
+                                      type="button"
+                                      onClick={goToNextPortfolio}
+                                      className="absolute right-2 top-1/2 inline-flex h-8 w-8 -translate-y-1/2 items-center justify-center rounded-full bg-black/55 text-white shadow-md hover:bg-black/70"
+                                      aria-label="Next lookbook image"
+                                    >
+                                      <ChevronRight className="h-4 w-4" />
+                                    </button>
+
+                                    <div className="absolute bottom-2 right-2 flex items-center gap-1 rounded-full bg-black/45 px-2 py-1">
+                                      {portfolioItems.map((item, idx) => (
+                                        <button
+                                          key={`${item.image_url || item.source_url || 'item'}-${idx}`}
+                                          type="button"
+                                          onClick={() => setPortfolioIndex(idx)}
+                                          className={`h-1.5 rounded-full transition-all ${idx === portfolioIndex ? 'w-4 bg-white' : 'w-1.5 bg-white/60'}`}
+                                          aria-label={`Go to lookbook image ${idx + 1}`}
+                                        />
+                                      ))}
+                                    </div>
+                                  </>
+                                )}
+                              </div>
+                            ) : (
+                              <p className="rounded-xl border border-brand-slate/10 px-3 py-3 text-sm" style={{ color: activeTheme.mutedText }}>
+                                No lookbook images available.
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -590,6 +647,28 @@ const PublicProfile = () => {
           )}
         </div>
       </div>
+
+      {lightboxImage && (
+        <div className="fixed inset-0 z-[70] flex items-center justify-center p-4">
+          <button
+            type="button"
+            className="absolute inset-0 bg-black/75"
+            onClick={() => setLightboxImage('')}
+            aria-label="Close image preview"
+          />
+          <div className="relative z-10 max-h-[90vh] w-full max-w-4xl overflow-hidden rounded-2xl">
+            <button
+              type="button"
+              onClick={() => setLightboxImage('')}
+              className="absolute right-3 top-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-black/60 text-white hover:bg-black/80"
+              aria-label="Close"
+            >
+              ×
+            </button>
+            <img src={lightboxImage} alt="Lookbook preview" className="max-h-[90vh] w-full object-contain bg-black" />
+          </div>
+        </div>
+      )}
     </div>
   )
 }

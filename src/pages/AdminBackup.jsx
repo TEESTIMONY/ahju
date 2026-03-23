@@ -27,7 +27,7 @@ const AdminBackup = () => {
     setMessage('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await fetch(`${apiBaseUrl}/api/admin/export/full/`, {
         method: 'GET',
         headers: {
@@ -83,7 +83,7 @@ const AdminBackup = () => {
     setMessage('')
 
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const formData = new FormData()
       formData.append('file', backupFile)
 

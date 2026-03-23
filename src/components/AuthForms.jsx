@@ -27,7 +27,7 @@ const AuthForms = ({ mode = 'login' }) => {
       const firebaseResult = await signInWithPopup(auth, googleProvider)
       const idToken = await firebaseResult.user.getIdToken()
 
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
       const response = await fetch(`${apiBaseUrl}/api/auth/google/`, {
         method: 'POST',
         headers: {
@@ -77,7 +77,7 @@ const AuthForms = ({ mode = 'login' }) => {
 
     setUsernameLoading(true)
     try {
-      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://ahju-backend-api.onrender.com'
+      const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
 
       const availabilityRes = await fetch(
         `${apiBaseUrl}/api/users/check-username/?username=${encodeURIComponent(trimmed)}`,
