@@ -8,6 +8,7 @@ import { auth, googleProvider } from '../lib/firebase'
 
 const signInImage = new URL('../../signin.png', import.meta.url).href
 const signUpImage = new URL('../../signup_image.png', import.meta.url).href
+const GUEST_CART_SESSION_KEY = 'ahju_cart_session'
 
 const AuthForms = ({ mode = 'login' }) => {
   const isLogin = mode === 'login'
@@ -28,12 +29,13 @@ const AuthForms = ({ mode = 'login' }) => {
       const idToken = await firebaseResult.user.getIdToken()
 
       const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'https://homeless-cassandre-delo-ab483b1e.koyeb.app'
+      const guestCartSession = localStorage.getItem(GUEST_CART_SESSION_KEY) || ''
       const response = await fetch(`${apiBaseUrl}/api/auth/google/`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ id_token: idToken }),
+        body: JSON.stringify({ id_token: idToken, session_key: guestCartSession }),
       })
 
       const data = await response.json()

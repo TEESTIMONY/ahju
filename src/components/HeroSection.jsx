@@ -243,7 +243,7 @@ const HeroSection = () => {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3 lg:justify-start">
               <motion.div whileHover={shouldReduceMotion ? {} : { y: -2, scale: 1.02 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
                 <Link
-                  to="/register"
+                  to="/shop"
                   className="inline-flex items-center gap-2 rounded-full bg-[#28241E] px-6 py-3 text-sm font-medium text-white transition hover:bg-[#253035]"
                 >
                   Get Your AHJU Card <ArrowRight className="h-4 w-4" />
@@ -404,7 +404,7 @@ const HeroSection = () => {
         <div className="mt-7 flex justify-center">
           <motion.div whileHover={shouldReduceMotion ? {} : { y: -2 }} whileTap={shouldReduceMotion ? {} : { scale: 0.98 }}>
             <Link
-              to="/register"
+              to="/shop"
               className="inline-flex items-center gap-2 rounded-full bg-[#28241E] px-7 py-3 text-sm font-semibold text-white transition hover:bg-[#253035]"
             >
               Get your AHJU NOW <ArrowRight className="h-4 w-4" />
@@ -595,7 +595,7 @@ const HeroSection = () => {
               <p className="text-xs uppercase tracking-[0.12em] text-white/70">Ready to stand out?</p>
               <p className="mt-2 text-sm text-white/80">Get your AHJU card and start sharing your premium identity in one tap.</p>
               <Link
-                to="/register"
+                to="/shop"
                 className="mt-4 inline-flex items-center gap-2 rounded-full bg-brand-green px-6 py-3 text-sm font-semibold text-white transition hover:bg-brand-green/90"
               >
                 GET YOUR AHJU <ArrowRight className="h-4 w-4" />

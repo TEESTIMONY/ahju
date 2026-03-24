@@ -7,6 +7,11 @@ import Dashboard from './pages/Dashboard'
 import Auth from './pages/Auth'
 import PublicProfile from './pages/PublicProfile'
 import AdminBackup from './pages/AdminBackup'
+import Shop from './pages/Shop'
+import ProductDetail from './pages/ProductDetail'
+import Cart from './pages/Cart'
+import Checkout from './pages/Checkout'
+import CheckoutStatus from './pages/CheckoutStatus'
 
 const AppRoutes = () => {
   const { theme, toggleDarkMode } = useTheme()
@@ -30,6 +35,11 @@ const AppRoutes = () => {
         <Route path="/login" element={<Auth />} />
         <Route path="/register" element={<Auth />} />
         <Route path="/r/" element={<PublicProfile />} />
+        <Route path="/shop" element={<Shop />} />
+        <Route path="/shop/:slug" element={<ProductDetail />} />
+        <Route path="/cart" element={<Cart />} />
+        <Route path="/checkout" element={<Checkout />} />
+        <Route path="/checkout/status" element={<CheckoutStatus />} />
         <Route path="/admin-backup" element={<AdminBackup />} />
       </Routes>
     </div>

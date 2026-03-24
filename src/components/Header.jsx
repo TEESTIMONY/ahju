@@ -1,11 +1,17 @@
 import React from 'react'
 import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
-import { ArrowRight } from 'lucide-react'
+import { ArrowRight, ShoppingCart } from 'lucide-react'
 
 const logoImage = new URL('../../logo.jpg', import.meta.url).href
 
-const Header = ({ isLoggedIn = false }) => {
+const Header = ({
+  isLoggedIn = false,
+  showCart = false,
+  cartCount = 0,
+  onCartClick,
+  shopCtaOnly = false,
+}) => {
   const hasSession =
     isLoggedIn ||
     Boolean(localStorage.getItem('ahju_access_token')) ||
@@ -27,7 +33,35 @@ const Header = ({ isLoggedIn = false }) => {
         </motion.div>
 
         <div className="flex items-center gap-3">
-          {!hasSession && (
+          {showCart && (
+            <button
+              id="navbar-cart-button"
+              type="button"
+              onClick={onCartClick}
+              className="relative inline-flex h-10 w-10 items-center justify-center rounded-full border border-brand-slate/20 bg-white text-brand-charcoal transition hover:scale-105 hover:border-brand-green/40"
+              aria-label={`Cart with ${cartCount} item${cartCount === 1 ? '' : 's'}`}
+              title="Cart"
+            >
+              <ShoppingCart className="h-4 w-4" />
+              {cartCount > 0 && (
+                <span className="absolute -right-1 -top-1 inline-flex min-h-5 min-w-5 items-center justify-center rounded-full bg-brand-green px-1 text-[10px] font-semibold leading-none text-white">
+                  {cartCount}
+                </span>
+              )}
+            </button>
+          )}
+
+          {shopCtaOnly ? (
+            <motion.div whileHover={{ y: -2, scale: 1.02 }} whileTap={{ scale: 0.98 }}>
+              <Link
+                to={hasSession ? '/dashboard' : '/register'}
+                className="inline-flex items-center gap-2 rounded-full bg-[#28241E] px-4 py-2 text-sm font-medium text-white transition hover:bg-[#253035]"
+              >
+                Get your link-in-bio
+                <ArrowRight className="h-4 w-4" />
+              </Link>
+            </motion.div>
+          ) : !hasSession && (
             <>
               <Link to={hasSession ? '/dashboard' : '/login'} className="hidden text-sm font-medium text-brand-slate/80 transition-colors hover:text-brand-green sm:inline">
                 Sign in
