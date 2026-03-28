@@ -121,7 +121,7 @@ const Checkout = () => {
         const sessionKey = getOrCreateGuestSession()
         const callbackUrl = `${window.location.origin}/checkout/status`
 
-        const response = await fetch(`${apiBaseUrl}/api/checkout/initialize/`, {
+        const response = await fetch(`${apiBaseUrl}/api/payments/initialize/`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
