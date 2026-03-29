@@ -6,8 +6,9 @@ import { signInWithPopup } from 'firebase/auth'
 import ahjuLogo from '../../logo.jpg'
 import { auth, googleProvider } from '../lib/firebase'
 
-const signInImage = new URL('../../signin.png', import.meta.url).href
-const signUpImage = new URL('../../signup_image.png', import.meta.url).href
+// Use optimized WebP assets for much faster auth page image loading.
+const signInImage = new URL('../../signin.webp', import.meta.url).href
+const signUpImage = new URL('../../signup_image.webp', import.meta.url).href
 const GUEST_CART_SESSION_KEY = 'ahju_cart_session'
 
 const AuthForms = ({ mode = 'login' }) => {

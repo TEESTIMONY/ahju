@@ -268,7 +268,13 @@ const Shop = () => {
                 style={{ animationDelay: `${index * 80}ms` }}
               >
                 <Link to={`/shop/${product.slug}`} className="block">
-                  <img src={resolveMediaUrl(product.image_url)} alt={product.name} className="shop-image h-52 w-full object-cover sm:h-72" />
+                  <img
+                    src={resolveMediaUrl(product.image_url)}
+                    alt={product.name}
+                    loading="lazy"
+                    decoding="async"
+                    className="shop-image h-52 w-full object-cover sm:h-72"
+                  />
                 </Link>
                 <div className="space-y-1.5 p-3">
                   <p className="text-xs font-semibold uppercase tracking-[0.1em] text-brand-slate/60">{product.category}</p>

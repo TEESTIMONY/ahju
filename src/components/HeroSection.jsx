@@ -292,10 +292,11 @@ const HeroSection = () => {
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
             <div className="overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
               <img
-                src={new URL('../../asset 1.png', import.meta.url).href}
+                src={new URL('../../asset 1.webp', import.meta.url).href}
                 alt="Professional networking in Nigeria"
                 className="h-[420px] w-full object-cover sm:h-[500px]"
                 loading="lazy"
+                decoding="async"
               />
             </div>
 

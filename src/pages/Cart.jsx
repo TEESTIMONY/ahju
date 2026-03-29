@@ -179,6 +179,8 @@ const Cart = () => {
                     <img
                       src={resolveMediaUrl(product.image_url)}
                       alt={product.name}
+                      loading="lazy"
+                      decoding="async"
                       className="h-14 w-14 shrink-0 rounded-xl object-cover sm:h-20 sm:w-20"
                     />
 

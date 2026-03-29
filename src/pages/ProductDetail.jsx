@@ -227,6 +227,9 @@ const ProductDetail = () => {
               <img
                 src={activeGalleryImage.url}
                 alt={activeGalleryImage.alt}
+                loading="eager"
+                fetchPriority="high"
+                decoding="async"
                 className="h-full min-h-[320px] w-full object-cover"
               />
             ) : null}
@@ -267,7 +270,13 @@ const ProductDetail = () => {
                   }`}
                   aria-label={`View image ${index + 1}`}
                 >
-                  <img src={image.url} alt={image.alt} className="h-16 w-full object-cover" />
+                  <img
+                    src={image.url}
+                    alt={image.alt}
+                    loading="lazy"
+                    decoding="async"
+                    className="h-16 w-full object-cover"
+                  />
                 </button>
               ))}
             </div>
