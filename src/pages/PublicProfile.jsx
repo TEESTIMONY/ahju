@@ -34,36 +34,6 @@ import {
 } from 'react-icons/fa6'
 import { SiFiverr, SiUpwork } from 'react-icons/si'
 
-const PROFILE_CACHE_TTL_MS = 60_000
-
-const getProfileCacheKey = (profileId = '') => `ahju_public_profile_cache_${(profileId || '').toLowerCase()}`
-
-const readCachedProfile = (profileId = '') => {
-  const key = getProfileCacheKey(profileId)
-  try {
-    const raw = sessionStorage.getItem(key)
-    if (!raw) return null
-    const parsed = JSON.parse(raw)
-    if (!parsed?.data || !parsed?.ts) return null
-    if (Date.now() - parsed.ts > PROFILE_CACHE_TTL_MS) return null
-    return parsed.data
-  } catch {
-    return null
-  }
-}
-
-const writeCachedProfile = (profileId = '', data = null) => {
-  if (!profileId || !data) return
-  try {
-    sessionStorage.setItem(
-      getProfileCacheKey(profileId),
-      JSON.stringify({ ts: Date.now(), data }),
-    )
-  } catch {
-    // Ignore cache write issues.
-  }
-}
-
 const THEME_PRESETS = [
   {
     key: 'minimal-light',
@@ -256,8 +226,6 @@ const PublicProfile = () => {
   }, [portfolioItems.length])
 
   useEffect(() => {
-    const controller = new AbortController()
-
     const fetchProfile = async () => {
       if (!profileId) {
         setError('Missing profile id in URL. Example: /r/?id=jabbar')
@@ -265,20 +233,11 @@ const PublicProfile = () => {
         return
       }
 
-      const cachedProfile = readCachedProfile(profileId)
-      if (cachedProfile) {
-        setProfile(cachedProfile)
-        setLoading(false)
-      } else {
-        setLoading(true)
-      }
+      setLoading(true)
       setError('')
 
       try {
-        const response = await fetch(`${apiBaseUrl}/api/public/profile/?id=${encodeURIComponent(profileId)}`, {
-          signal: controller.signal,
-          cache: 'force-cache',
-        })
+        const response = await fetch(`${apiBaseUrl}/api/public/profile/?id=${encodeURIComponent(profileId)}`)
         const data = await response.json()
 
         if (!response.ok) {
@@ -286,7 +245,6 @@ const PublicProfile = () => {
         }
 
         setProfile(data)
-        writeCachedProfile(profileId, data)
 
         const trackedViewKey = `ahju_view_tracked_${data.username}`
         const hasTrackedView = sessionStorage.getItem(trackedViewKey)
@@ -304,7 +262,6 @@ const PublicProfile = () => {
           sessionStorage.setItem(trackedViewKey, '1')
         }
       } catch (err) {
-        if (err?.name === 'AbortError') return
         setError(err.message || 'Could not load profile')
       } finally {
         setLoading(false)
@@ -312,9 +269,6 @@ const PublicProfile = () => {
     }
 
     fetchProfile()
-    return () => {
-      controller.abort()
-    }
   }, [profileId])
 
   const submitPublicContact = async (e) => {
@@ -405,9 +359,6 @@ const PublicProfile = () => {
                   src={resolveMediaUrl(profile.hero_image_url)}
                   alt="Hero"
                   className="h-36 w-full object-cover sm:h-48"
-                  loading="eager"
-                  decoding="async"
-                  fetchpriority="high"
                 />
               ) : (
                 <div className="h-36 w-full bg-brand-slate/10 sm:h-48" />
@@ -420,9 +371,6 @@ const PublicProfile = () => {
                       src={resolveMediaUrl(profile.profile_image_url)}
                       alt="Profile preview"
                       className="h-16 w-16 rounded-full object-cover sm:h-20 sm:w-20"
-                      loading="eager"
-                      decoding="async"
-                      fetchpriority="high"
                     />
                   ) : (
                     <div className="h-16 w-16 rounded-full bg-brand-slate/15 sm:h-20 sm:w-20" />
@@ -623,8 +571,6 @@ const PublicProfile = () => {
                                       src={resolveMediaUrl(activePortfolioItem.image_url)}
                                       alt={portfolioTitleBadge || 'Lookbook image'}
                                       className="h-56 w-full cursor-zoom-in object-cover sm:h-64"
-                                      loading="lazy"
-                                      decoding="async"
                                     />
                                   </button>
                                 ) : (
