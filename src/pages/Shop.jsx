@@ -85,17 +85,11 @@ const Shop = () => {
   }
 
   useEffect(() => {
-    const initialize = async () => {
-      await loadProducts()
-      try {
-        await loadCart()
-      } catch {
-        setCartItems([])
-        setCartCount(0)
-      }
-    }
-
-    initialize()
+    loadProducts()
+    loadCart().catch(() => {
+      setCartItems([])
+      setCartCount(0)
+    })
   }, [])
 
   const categories = useMemo(() => {
@@ -271,8 +265,10 @@ const Shop = () => {
                   <img
                     src={resolveMediaUrl(product.image_url)}
                     alt={product.name}
-                    loading="lazy"
+                    loading={index < 2 ? 'eager' : 'lazy'}
+                    fetchpriority={index < 2 ? 'high' : 'auto'}
                     decoding="async"
+                    sizes="(max-width: 640px) 50vw, (max-width: 1024px) 33vw, 25vw"
                     className="shop-image h-52 w-full object-cover sm:h-72"
                   />
                 </Link>

@@ -3,7 +3,7 @@ import { motion } from 'framer-motion'
 import { Link } from 'react-router-dom'
 import { ArrowRight, ShoppingCart } from 'lucide-react'
 
-const logoImage = new URL('../../logo.jpg', import.meta.url).href
+const logoImage = new URL('../Asset/AHJU LOGO.png', import.meta.url).href
 
 const Header = ({
   isLoggedIn = false,
@@ -26,9 +26,14 @@ const Header = ({
     >
       <div className="mx-auto flex w-full max-w-[86rem] items-center justify-between px-2 py-4 sm:px-3 lg:px-4">
         <motion.div whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.98 }}>
-        <Link to="/" className="flex items-center gap-2">
-          <img src={logoImage} alt="AHJU logo" className="h-8 w-8 rounded-full object-cover shadow-sm shadow-brand-green/35" />
-          <h1 className="text-base font-semibold tracking-tight text-brand-charcoal">AHJU</h1>
+        <Link to="/" className="flex items-center">
+          <img
+            src={logoImage}
+            alt="AHJU logo"
+            loading="eager"
+            decoding="async"
+            className="h-8 w-auto max-w-[170px] object-contain sm:h-9 sm:max-w-[200px]"
+          />
         </Link>
         </motion.div>
 

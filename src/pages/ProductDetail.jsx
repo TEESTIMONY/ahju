@@ -73,19 +73,13 @@ const ProductDetail = () => {
       setIsLoading(true)
       setError('')
       try {
-        const response = await fetch(`${apiBaseUrl}/api/products/`)
+        const response = await fetch(`${apiBaseUrl}/api/products/${encodeURIComponent(slug)}/`)
         const data = await response.json()
         if (!response.ok) {
           throw new Error(data?.detail || 'Could not load product')
         }
 
-        const items = Array.isArray(data) ? data : []
-        const found = items.find((item) => item.slug === slug)
-        if (!found) {
-          throw new Error('Product not found')
-        }
-
-        setProduct(found)
+        setProduct(data || null)
         await loadCart()
       } catch (err) {
         setError(err.message || 'Could not load product')
@@ -228,7 +222,7 @@ const ProductDetail = () => {
                 src={activeGalleryImage.url}
                 alt={activeGalleryImage.alt}
                 loading="eager"
-                fetchPriority="high"
+                fetchpriority="high"
                 decoding="async"
                 className="h-full min-h-[320px] w-full object-cover"
               />

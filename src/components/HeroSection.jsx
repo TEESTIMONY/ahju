@@ -39,14 +39,36 @@ const AnimatedMetric = ({ end, suffix = '', duration = 1.6 }) => {
 
 const HeroSection = () => {
   const shouldReduceMotion = useReducedMotion()
+  const smilingGirlImage = new URL('../Asset/smily girl.jpg', import.meta.url).href
+  const whyModernImage = new URL('../Asset/why the mdern.jpg', import.meta.url).href
+  const howAhjuWorksImage = new URL('../Asset/how ahju works.jpg', import.meta.url).href
+  const exploreImage = new URL('../Asset/explore.jpg', import.meta.url).href
 
   const showcaseImages = [
-    { src: 'https://picsum.photos/id/1011/600/900', alt: 'Professional portrait sample' },
-    { src: 'https://picsum.photos/id/1005/600/900', alt: 'Lifestyle profile sample' },
-    { src: 'https://picsum.photos/id/1012/600/900', alt: 'Creator portfolio sample' },
-    { src: 'https://picsum.photos/id/1016/600/900', alt: 'Business profile sample' },
-    { src: 'https://picsum.photos/id/1027/600/900', alt: 'Personal branding sample' },
-    { src: 'https://picsum.photos/id/1043/600/900', alt: 'Minimal professional sample' },
+    {
+      src: new URL('../Asset/Untitled design (1).jpg', import.meta.url).href,
+      alt: 'AHJU showcase card design one',
+    },
+    {
+      src: new URL('../Asset/Untitled design (2).jpg', import.meta.url).href,
+      alt: 'AHJU showcase card design two',
+    },
+    {
+      src: new URL('../Asset/Untitled design (4).jpg', import.meta.url).href,
+      alt: 'AHJU showcase card design three',
+    },
+    {
+      src: new URL('../Asset/Untitled design (6).jpg', import.meta.url).href,
+      alt: 'AHJU showcase card design four',
+    },
+    {
+      src: new URL('../Asset/Untitled design (7).jpg', import.meta.url).href,
+      alt: 'AHJU showcase card design five',
+    },
+    {
+      src: new URL('../Asset/Untitled design (8).jpg', import.meta.url).href,
+      alt: 'AHJU showcase card design six',
+    },
   ]
 
   const highlights = [
@@ -267,6 +289,9 @@ const HeroSection = () => {
                     src={image.src}
                     alt={image.alt}
                     loading="lazy"
+                    fetchpriority="low"
+                    decoding="async"
+                    sizes="(max-width: 1024px) 45vw, 22vw"
                     className="h-40 w-full rounded-xl object-cover"
                   />
                 ))}
@@ -278,6 +303,9 @@ const HeroSection = () => {
                     src={image.src}
                     alt={image.alt}
                     loading="lazy"
+                    fetchpriority="low"
+                    decoding="async"
+                    sizes="(max-width: 1024px) 45vw, 22vw"
                     className="h-40 w-full rounded-xl object-cover"
                   />
                 ))}
@@ -292,11 +320,13 @@ const HeroSection = () => {
           <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-2">
             <div className="overflow-hidden rounded-2xl border border-black/10 bg-black/[0.02]">
               <img
-                src={new URL('../../asset 1.webp', import.meta.url).href}
+                src={whyModernImage}
                 alt="Professional networking in Nigeria"
                 className="h-[420px] w-full object-cover sm:h-[500px]"
                 loading="lazy"
+                fetchpriority="low"
                 decoding="async"
+                sizes="(max-width: 1024px) 92vw, 46vw"
               />
             </div>
 
@@ -368,10 +398,12 @@ const HeroSection = () => {
 
             <div className="rounded-2xl border-2 border-black/10 bg-white p-3 shadow-[8px_8px_0_rgba(17,17,17,0.08)]">
               <img
-                src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=900&q=80"
-                alt="Professional profile showcase"
+                src={smilingGirlImage}
+                alt="Smiling professional profile showcase"
                 loading="lazy"
-                className="h-[360px] w-full rounded-xl object-cover lg:h-[430px]"
+                decoding="async"
+                sizes="(max-width: 1024px) 92vw, 40vw"
+                className="h-[360px] w-full rounded-xl object-cover object-[50%_12%] lg:h-[430px]"
               />
               <p className="mt-3 text-sm font-medium text-black/70">Stand out instantly with a polished digital identity.</p>
             </div>
@@ -479,9 +511,12 @@ const HeroSection = () => {
 
               <div className="relative mt-5 overflow-hidden rounded-2xl border border-black/10 bg-black/[0.03] p-2">
                 <img
-                  src="https://images.unsplash.com/photo-1556740749-887f6717d7e4?auto=format&fit=crop&w=900&q=80"
+                  src={howAhjuWorksImage}
                   alt="Professional using phone for NFC sharing"
                   loading="lazy"
+                  fetchpriority="low"
+                  decoding="async"
+                  sizes="(max-width: 1024px) 92vw, 44vw"
                   className="h-56 w-full rounded-xl object-cover"
                 />
                 <div className="pointer-events-none absolute inset-x-2 bottom-2 rounded-b-xl bg-gradient-to-t from-black/55 via-black/20 to-transparent p-3">
@@ -528,9 +563,12 @@ const HeroSection = () => {
 
               <div className="mt-5 rounded-2xl border-2 border-black/10 bg-white p-3 shadow-[8px_8px_0_rgba(17,17,17,0.08)]">
                 <img
-                  src="https://images.unsplash.com/photo-1552581234-26160f608093?auto=format&fit=crop&w=900&q=80"
+                  src={exploreImage}
                   alt="Professional planning strategy with digital assistant"
                   loading="lazy"
+                  fetchpriority="low"
+                  decoding="async"
+                  sizes="(max-width: 1024px) 92vw, 44vw"
                   className="h-52 w-full rounded-xl object-cover"
                 />
                 <p className="mt-3 text-sm font-medium text-black/70">From cold outreach to closing conversations, AHJU helps you move smarter.</p>
