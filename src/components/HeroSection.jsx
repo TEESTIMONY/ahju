@@ -591,7 +591,7 @@ const HeroSection = () => {
         </div>
       </section>
 
-      <motion.section {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-8 sm:px-3 lg:px-4">
+      <motion.section id="faq" {...sectionReveal} className="mx-auto w-full max-w-[86rem] px-2 py-8 sm:px-3 lg:px-4">
         <div className="mb-6 text-center">
           <p className="text-xs font-semibold uppercase tracking-[0.14em] text-black/55">Your Questions, Our Answers</p>
           <h2 className="mt-2 text-2xl font-semibold tracking-tight text-black sm:text-3xl">FAQs about AHJU</h2>

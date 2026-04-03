@@ -49,9 +49,17 @@ const Footer = () => {
         <motion.div variants={itemVariants} transition={{ duration: 0.35 }}>
           <h3 className="mb-3 text-sm font-semibold uppercase tracking-[0.12em] text-brand-slate/70">Company</h3>
           <div className="space-y-2">
-            <motion.a whileHover={{ x: 4 }} href="#" className="block transition-colors hover:text-brand-green">Send us a Message</motion.a>
-            <motion.a whileHover={{ x: 4 }} href="#" className="block transition-colors hover:text-brand-green">Shop</motion.a>
-            <motion.a whileHover={{ x: 4 }} href="#" className="block transition-colors hover:text-brand-green">FAQ</motion.a>
+            <motion.a
+              whileHover={{ x: 4 }}
+              href={socialLinks.whatsapp}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block transition-colors hover:text-brand-green"
+            >
+              Send us a Message
+            </motion.a>
+            <motion.a whileHover={{ x: 4 }} href="/shop" className="block transition-colors hover:text-brand-green">Shop</motion.a>
+            <motion.a whileHover={{ x: 4 }} href="/#faq" className="block transition-colors hover:text-brand-green">FAQ</motion.a>
             <motion.a
               whileHover={{ x: 4 }}
               href="https://www.bilta.com.ng"
