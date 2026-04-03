@@ -148,7 +148,7 @@ const emptyChartData = [
   { day: 'Sun', views: 0, clicks: 0, leads: 0 },
 ]
 
-const dashboardLogo = new URL('../../logo.jpg', import.meta.url).href
+const dashboardLogo = new URL('../Asset/AHJU LOGO.png', import.meta.url).href
 
 const lookbookItems = [
   { name: 'Classic PVC', image: new URL('../../AHJU Classic PVC Card.jpg', import.meta.url).href },
@@ -1497,10 +1497,16 @@ const Dashboard = () => {
             <button
               type="button"
               onClick={() => navigate('/')}
-              className="flex items-center gap-3 text-left"
+              className="flex min-w-0 items-center gap-3 text-left"
               aria-label="Go to home page"
             >
-              <img src={dashboardLogo} alt="AHJU" className="h-10 w-10 rounded-md object-cover" />
+              <img
+                src={dashboardLogo}
+                alt="AHJU"
+                loading="eager"
+                decoding="async"
+                className="h-9 w-auto max-w-[180px] object-contain sm:h-10 sm:max-w-[210px]"
+              />
               <div>
                 <p className="text-xs uppercase tracking-[0.14em] text-brand-slate/60">Workspace</p>
                 <p className="font-semibold text-brand-charcoal">AHJU Dashboard</p>
@@ -1566,7 +1572,13 @@ const Dashboard = () => {
         <main className="min-w-0 overflow-x-hidden px-3 py-4 sm:px-4 md:px-7 md:py-6 lg:px-10">
           <div className="mb-4 flex items-center justify-between rounded-xl border border-brand-slate/10 bg-white px-3 py-2.5 lg:hidden">
             <div className="flex items-center gap-2">
-              <img src={dashboardLogo} alt="AHJU" className="h-6 w-6 rounded object-cover" />
+              <img
+                src={dashboardLogo}
+                alt="AHJU"
+                loading="eager"
+                decoding="async"
+                className="h-7 w-auto max-w-[120px] object-contain"
+              />
               <p className="text-sm font-semibold text-brand-charcoal">AHJU Dashboard</p>
             </div>
             <button

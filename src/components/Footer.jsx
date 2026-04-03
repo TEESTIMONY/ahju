@@ -52,6 +52,15 @@ const Footer = () => {
             <motion.a whileHover={{ x: 4 }} href="#" className="block transition-colors hover:text-brand-green">Send us a Message</motion.a>
             <motion.a whileHover={{ x: 4 }} href="#" className="block transition-colors hover:text-brand-green">Shop</motion.a>
             <motion.a whileHover={{ x: 4 }} href="#" className="block transition-colors hover:text-brand-green">FAQ</motion.a>
+            <motion.a
+              whileHover={{ x: 4 }}
+              href="https://www.bilta.com.ng"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="block font-medium text-brand-slate transition-colors hover:text-brand-green"
+            >
+              Visit BILTA (www.bilta.com.ng)
+            </motion.a>
           </div>
         </motion.div>
 

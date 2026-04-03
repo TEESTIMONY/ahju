@@ -3,8 +3,9 @@ import { motion } from 'framer-motion'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowRight, Loader2, ShieldCheck } from 'lucide-react'
 import { signInWithPopup } from 'firebase/auth'
-import ahjuLogo from '../../logo.jpg'
 import { auth, googleProvider } from '../lib/firebase'
+
+const ahjuLogo = new URL('../Asset/AHJU LOGO.png', import.meta.url).href
 
 // Use optimized WebP assets for much faster auth page image loading.
 const signInImage = new URL('../../signin.webp', import.meta.url).href
@@ -129,10 +130,13 @@ const AuthForms = ({ mode = 'login' }) => {
 
         <div className="relative flex min-h-screen items-center justify-center bg-white px-6 py-10 sm:px-10">
           <div className="absolute left-6 top-6 sm:left-10 sm:top-8">
-            <div className="flex items-center gap-3">
-              <img src={ahjuLogo} alt="AHJU logo" className="h-10 w-10 rounded-md object-cover" />
-              <span className="text-base font-semibold tracking-[0.1em] text-brand-charcoal">AHJU</span>
-            </div>
+            <img
+              src={ahjuLogo}
+              alt="AHJU logo"
+              loading="eager"
+              decoding="async"
+              className="h-9 w-auto max-w-[190px] object-contain sm:h-10 sm:max-w-[220px]"
+            />
           </div>
 
           <div className="w-full max-w-md">

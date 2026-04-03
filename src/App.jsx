@@ -1,17 +1,18 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 import { Moon, Sun } from 'lucide-react'
 import { ThemeProvider, useTheme } from './context/ThemeContext'
-import Landing from './pages/Landing'
-import Dashboard from './pages/Dashboard'
-import Auth from './pages/Auth'
-import PublicProfile from './pages/PublicProfile'
-import AdminBackup from './pages/AdminBackup'
-import Shop from './pages/Shop'
-import ProductDetail from './pages/ProductDetail'
-import Cart from './pages/Cart'
-import Checkout from './pages/Checkout'
-import CheckoutStatus from './pages/CheckoutStatus'
+
+const Landing = lazy(() => import('./pages/Landing'))
+const Dashboard = lazy(() => import('./pages/Dashboard'))
+const Auth = lazy(() => import('./pages/Auth'))
+const PublicProfile = lazy(() => import('./pages/PublicProfile'))
+const AdminBackup = lazy(() => import('./pages/AdminBackup'))
+const Shop = lazy(() => import('./pages/Shop'))
+const ProductDetail = lazy(() => import('./pages/ProductDetail'))
+const Cart = lazy(() => import('./pages/Cart'))
+const Checkout = lazy(() => import('./pages/Checkout'))
+const CheckoutStatus = lazy(() => import('./pages/CheckoutStatus'))
 
 const AppRoutes = () => {
   const { theme, toggleDarkMode } = useTheme()
@@ -28,20 +29,28 @@ const AppRoutes = () => {
         {theme.isDark ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
       </button>
 
-      <Routes>
-        <Route path="/" element={<Landing />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/dashboad" element={<Dashboard />} />
-        <Route path="/login" element={<Auth />} />
-        <Route path="/register" element={<Auth />} />
-        <Route path="/r/" element={<PublicProfile />} />
-        <Route path="/shop" element={<Shop />} />
-        <Route path="/shop/:slug" element={<ProductDetail />} />
-        <Route path="/cart" element={<Cart />} />
-        <Route path="/checkout" element={<Checkout />} />
-        <Route path="/checkout/status" element={<CheckoutStatus />} />
-        <Route path="/admin-backup" element={<AdminBackup />} />
-      </Routes>
+      <Suspense
+        fallback={
+          <div className="mx-auto flex min-h-[40vh] w-full max-w-[86rem] items-center justify-center px-4 text-sm text-brand-slate/75">
+            Loading page...
+          </div>
+        }
+      >
+        <Routes>
+          <Route path="/" element={<Landing />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/dashboad" element={<Dashboard />} />
+          <Route path="/login" element={<Auth />} />
+          <Route path="/register" element={<Auth />} />
+          <Route path="/r/" element={<PublicProfile />} />
+          <Route path="/shop" element={<Shop />} />
+          <Route path="/shop/:slug" element={<ProductDetail />} />
+          <Route path="/cart" element={<Cart />} />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route path="/checkout/status" element={<CheckoutStatus />} />
+          <Route path="/admin-backup" element={<AdminBackup />} />
+        </Routes>
+      </Suspense>
     </div>
   )
 }
